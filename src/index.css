@@ -45,6 +45,10 @@ button{
   width: 12vw;
 }
 
+button:hover{
+  cursor: pointer;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
