@@ -1,4 +1,6 @@
 import React from "react";
+import telefone from "/src/assets/telefone.png";
+import logo from "/src/assets/logo.png";
 
 const Home = () => {
   return (
@@ -6,7 +8,7 @@ const Home = () => {
       <div className="flex flex-col items-center">
         {/* Cabeçalho */}
         <header className="w-full flex justify-start py-6 max-w-6xl">
-          <img src="./src/assets/logo.png" alt="cabeça azul com cerebro branco" className="w-14" />
+          <img src={logo} alt="cabeça azul com cerebro branco" className="w-14" />
           <h1 className="text-6xl font-bold ml-4 mt-2">DailyFlow</h1>
         </header>
 
@@ -21,7 +23,7 @@ const Home = () => {
           {/* Glow azul claro */}
           <div className="absolute inset-0 bg-blue-300 blur-2xl opacity-50 rounded-lg"></div>
           <img
-            src="./src/assets/telefone.png"
+            src={telefone}
             alt="mulher mexendo no celular"
             className="relative w-110 h-110 object-cover rounded-lg " />
         </div>
