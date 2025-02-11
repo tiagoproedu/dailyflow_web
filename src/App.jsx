@@ -13,7 +13,7 @@ const Home = () => {
         {/* Seção principal */}
         <main className="flex flex-col items-start text-start justify-between mt-20 max-w-4xl min-h-96">
           <h2 className="text-6xl font-bold max-w-120">Seu assistente de hábitos, rotinas e produtividade</h2>
-          <button className="bg-linear-to-r from-[#1f41bb] to-[#137dc5] rounded-full">Pré-cadastrar</button>
+          <button className="bg-linear-to-r from-[#1f41bb] to-[#137dc5] rounded-full" onClick={() => window.location.href = "https://forms.gle/bw7EbBA4G7BBAVJX8"}>Pré-cadastrar</button>
         </main>
       </div>
       <div className="flex flex-col items-center justify-center">
