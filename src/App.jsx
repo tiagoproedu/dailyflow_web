@@ -6,7 +6,7 @@ const Home = () => {
       <div className="flex flex-col items-center">
         {/* Cabeçalho */}
         <header className="w-full flex justify-start py-6 max-w-6xl">
-          <img src=".+/src/assets/logo.png" alt="cabeça azul com cerebro branco" className="w-14" />
+          <img src="./src/assets/logo.png" alt="cabeça azul com cerebro branco" className="w-14" />
           <h1 className="text-6xl font-bold ml-4 mt-2">DailyFlow</h1>
         </header>
 
