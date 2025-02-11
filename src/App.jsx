@@ -2,11 +2,11 @@ import React from "react";
 
 const Home = () => {
   return (
-    <div className="min-h-screen min-w-screen flex flex-row p-6 justify-around">
+    <div className="min-h-screen min-w-screen flex flex-row p-6 justify-around items-center">
       <div className="flex flex-col items-center">
         {/* Cabeçalho */}
-        <header className="w-full flex items-center justify-start py-6 max-w-6xl">
-          <img src="./src/assets/logo.png" alt="cabeça azul com cerebro branco" className="w-14" />
+        <header className="w-full flex justify-start py-6 max-w-6xl">
+          <img src=".+/src/assets/logo.png" alt="cabeça azul com cerebro branco" className="w-14" />
           <h1 className="text-6xl font-bold ml-4 mt-2">DailyFlow</h1>
         </header>
 
