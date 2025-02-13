@@ -4,7 +4,7 @@ import logo from "/src/assets/logo.png";
 
 const Home = () => {
   return (
-    <div className="min-h-screen min-w-screen flex flex-col lg:flex-row p-6 justify-around items-center">
+    <div className="min-h-screen min-w-screen flex flex-col lg:flex-row p-6 justify-around items-center bg-[#101728]">
       <div className="flex flex-col items-center w-full lg:w-auto">
         {/* Cabeçalho */}
         <header className="w-full flex justify-center lg:justify-start py-6 max-w-6xl">
