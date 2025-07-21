@@ -1,0 +1,838 @@
+:root {
+  --primary-blue-light: #EFF6FF;
+  --primary-blue: #60A5FA;
+  --primary-blue-medium: #3B82F6;
+  --primary-blue-dark: #2563EB;
+  --primary-blue-darker: #1D4ED8;
+  
+  --primary-purple-light: #F5F3FF;
+  --primary-purple: #A78BFA;
+  --primary-purple-medium: #8B5CF6;
+  --primary-purple-dark: #7C3AED;
+  --primary-purple-darker: #6D28D9;
+  
+  --neutral-gray-light: #F9FAFB;
+  --neutral-gray: #F3F4F6;
+  --neutral-gray-medium: #9CA3AF;
+  --neutral-gray-dark: #4B5563;
+  --neutral-gray-darker: #374151;
+
+  --radius-sm: calc(0.5rem - 4px);
+  --radius-md: calc(0.5rem - 2px);
+  --radius-lg: 0.5rem;
+}
+
+/* Layout Principal */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  position: relative; /* Para que o .sidebar fixed se posicione dentro da tela */
+}
+
+/* Conteúdo Principal */
+.main-content {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--primary-blue-light);
+  /* Nenhum margin-left ou width baseado na sidebar */
+}
+
+.page-container {
+  padding: 1.5rem; /* Equivalente a p-6 */
+  max-width: 1280px; /* Equivalente a max-w-7xl */
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+.page-title {
+  font-size: 1.5rem; /* Equivalente a text-2xl */
+  font-weight: 600; /* Equivalente a font-semibold */
+  margin-bottom: 1.5rem; /* Equivalente a mb-6 */
+  color: var(--neutral-gray-darker);
+}
+
+.section-title {
+  font-size: 1.25rem; /* Equivalente a text-xl */
+  font-weight: 500; /* Equivalente a font-medium */
+  margin-bottom: 1rem; /* Equivalente a mb-4 */
+  color: var(--neutral-gray-darker);
+}
+
+/* Header */
+.header {
+  position: relative;
+  z-index: 1100;
+  background-color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.05); /* Equivalente a shadow-sm */
+  padding: 0.75rem 1rem; /* Equivalente a py-3 px-4 */
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.menu-button {
+  margin-right: 1rem; /* Equivalente a mr-4 */
+  color: var(--neutral-gray-medium);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.menu-button:hover {
+  color: var(--primary-blue-medium);
+}
+
+.menu-button svg {
+  height: 1.5rem; /* Equivalente a h-6 */
+  width: 1.5rem; /* Equivalente a w-6 */
+}
+
+.header-title {
+  font-size: 1.25rem; /* Equivalente a text-xl */
+  font-weight: 600; /* Equivalente a font-semibold */
+  color: var(--primary-blue-dark);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Equivalente a space-x-4 */
+}
+
+.notification-button {
+  color: var(--neutral-gray-medium);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.notification-button:hover {
+  color: var(--primary-purple-medium);
+}
+
+.notification-button svg {
+  height: 1.5rem; /* Equivalente a h-6 */
+  width: 1.5rem; /* Equivalente a w-6 */
+}
+
+.user-avatar {
+  height: 2rem; /* Equivalente a h-8 */
+  width: 2rem; /* Equivalente a w-8 */
+  border-radius: 9999px; /* Equivalente a rounded-full */
+  background-color: var(--primary-purple-medium);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500; /* Equivalente a font-medium */
+  font-size: 0.875rem; /* Equivalente a text-sm */
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 16rem; /* 256px */
+  background-color: white;
+  border-right: 1px solid var(--neutral-gray);
+  z-index: 1000;
+  transform: translateX(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.closed {
+  transform: translateX(-100%);
+}
+
+@media (min-width: 768px) { /* Equivalente a md: */
+  .sidebar {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-content {
+  padding: 1rem; /* Equivalente a p-4 */
+}
+
+.sidebar-menu-title {
+  margin-bottom: 1.5rem; /* Equivalente a mb-6 */
+  font-size: 0.75rem; /* Equivalente a text-sm */
+  font-weight: 500; /* Equivalente a font-medium */
+  color: var(--neutral-gray-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em; /* Equivalente a tracking-wider */
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem; /* Equivalente a space-y-1 */
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem; /* Equivalente a px-3 py-2 */
+  border-radius: var(--radius-md); /* Equivalente a rounded-md */
+  font-size: 0.875rem; /* Equivalente a text-sm */
+  font-weight: 500; /* Equivalente a font-medium */
+  color: var(--neutral-gray-dark);
+  text-decoration: none;
+}
+
+.sidebar-nav a:hover {
+  background-color: var(--neutral-gray-light);
+}
+
+.sidebar-nav a.active {
+  background-color: var(--primary-blue-light);
+  color: var(--primary-blue-dark);
+}
+
+.sidebar-nav a svg {
+  margin-right: 0.75rem; /* Equivalente a mr-3 */
+  height: 1.25rem; /* Equivalente a h-5 */
+  width: 1.25rem; /* Equivalente a w-5 */
+}
+
+/* Cards */
+.card {
+  background-color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.05); /* Equivalente a shadow-sm */
+  border-radius: var(--radius-lg); /* Equivalente a rounded-lg */
+  padding: 1.25rem; /* Equivalente a p-5 */
+  border: 1px solid var(--neutral-gray);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Equivalente a shadow-md */
+}
+
+.card-title {
+  font-size: 1.125rem; /* Equivalente a text-lg */
+  font-weight: 500; /* Equivalente a font-medium */
+  margin-bottom: 0.5rem; /* Equivalente a mb-2 */
+}
+
+.card-metric {
+  font-size: 1.875rem; /* Equivalente a text-3xl */
+  font-weight: 600; /* Equivalente a font-semibold */
+}
+
+.card-metric-blue {
+  color: var(--primary-blue-dark);
+}
+
+.card-metric-purple {
+  color: var(--primary-purple-dark);
+}
+
+/* Grids */
+.grid {
+  display: grid;
+  gap: 1.5rem; /* Equivalente a gap-6 */
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+@media (min-width: 768px) { /* md */
+  .grid-cols-md-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) { /* lg */
+  .grid-cols-lg-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-cols-lg-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Listas */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Equivalente a space-y-2 */
+}
+
+.list-item {
+  padding: 0.75rem; /* Equivalente a p-3 */
+  background-color: var(--neutral-gray-light);
+  border-radius: var(--radius-md); /* Equivalente a rounded-md */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Botões */
+.btn {
+  padding: 0.5rem 1rem; /* Equivalente a py-2 px-4 */
+  border-radius: var(--radius-md); /* Equivalente a rounded-md */
+  font-weight: 500; /* Equivalente a font-medium */
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: var(--primary-blue-medium);
+  color: white;
+  border-color: var(--primary-blue-medium);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-blue-dark);
+  border-color: var(--primary-blue-dark);
+}
+
+.btn-secondary {
+  background-color: var(--primary-purple-medium);
+  color: white;
+  border-color: var(--primary-purple-medium);
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-purple-dark);
+  border-color: var(--primary-purple-dark);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary-blue-medium);
+  border-color: var(--primary-blue-medium);
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-blue-light);
+}
+
+.btn-xs {
+  font-size: 0.75rem; /* Equivalente a text-xs */
+  padding: 0.25rem 0.5rem; /* Equivalente a py-1 px-2 */
+}
+
+/* Habit Tracker */
+.habit-progress {
+  display: flex;
+  gap: 0.25rem; /* Equivalente a space-x-1 */
+}
+
+.habit-dot {
+  height: 1rem; /* Equivalente a h-4 */
+  width: 1rem; /* Equivalente a w-4 */
+  border-radius: 9999px; /* Equivalente a rounded-full */
+  background-color: var(--neutral-gray);
+}
+
+.habit-dot.completed {
+  background-color: var(--primary-purple-medium);
+}
+
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem; /* Equivalente a mb-6 */
+  flex-wrap: wrap; /* Para responsividade */
+  gap: 1rem; /* Espaçamento entre título e botão em telas menores */
+}
+
+.add-task-button {
+  display: inline-flex; /* Para alinhar ícone e texto */
+  align-items: center;
+  gap: 0.5rem; /* Espaço entre ícone e texto */
+}
+
+.button-icon {
+  height: 1.25rem; /* Equivalente a h-5 */
+  width: 1.25rem; /* Equivalente a w-5 */
+}
+
+.button-icon-sm {
+  height: 1rem; /* Equivalente a h-4 */
+  width: 1rem; /* Equivalente a w-4 */
+}
+
+.task-list-container {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--neutral-gray);
+  overflow: hidden; /* Para conter a lista */
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem; /* Espaçamento interno */
+  border-bottom: 1px solid var(--neutral-gray);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-item:hover {
+  background-color: var(--neutral-gray-light);
+}
+
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  color: var(--neutral-gray-medium);
+}
+
+.task-item-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Espaço entre checkbox e texto */
+  flex-grow: 1; /* Para ocupar espaço disponível */
+  margin-right: 1rem; /* Espaço antes dos detalhes */
+}
+
+.task-checkbox {
+  height: 1.125rem; /* Tamanho do checkbox */
+  width: 1.125rem;
+  accent-color: var(--primary-blue-medium); /* Cor do checkbox marcado */
+  cursor: pointer;
+}
+
+.task-text {
+  color: var(--neutral-gray-darker);
+  font-size: 0.9rem;
+}
+
+.task-item-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Espaço entre prioridade e botão */
+  flex-shrink: 0; /* Para não encolher */
+}
+
+.task-priority {
+  font-size: 0.75rem; /* Equivalente a text-xs */
+  font-weight: 500; /* Equivalente a font-medium */
+  padding: 0.125rem 0.5rem; /* Equivalente a py-0.5 px-2 */
+  border-radius: 9999px; /* Equivalente a rounded-full */
+  text-transform: capitalize;
+}
+
+.priority-high {
+  background-color: #FEE2E2; /* Vermelho claro */
+  color: #B91C1C; /* Vermelho escuro */
+}
+
+.priority-medium {
+  background-color: #FEF3C7; /* Amarelo claro */
+  color: #B45309; /* Amarelo escuro */
+}
+
+.priority-low {
+  background-color: #DBEAFE; /* Azul claro */
+  color: #1E40AF; /* Azul escuro */
+}
+
+.task-action-button {
+  background: none;
+  border: none;
+  color: var(--neutral-gray-medium);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 9999px;
+}
+
+.task-action-button:hover {
+  color: var(--neutral-gray-darker);
+  background-color: var(--neutral-gray);
+}
+
+/* Responsividade para a lista de tarefas */
+@media (max-width: 640px) { /* Telas menores */
+  .task-item {
+    flex-direction: column; /* Empilha os elementos */
+    align-items: flex-start; /* Alinha à esquerda */
+    gap: 0.5rem; /* Espaço entre conteúdo e detalhes */
+  }
+
+  .task-item-content {
+    margin-right: 0; /* Remove margem */
+    width: 100%; /* Ocupa toda a largura */
+  }
+
+  .task-item-details {
+    width: 100%; /* Ocupa toda a largura */
+    justify-content: space-between; /* Espaça prioridade e botão */
+    padding-top: 0.5rem; /* Adiciona espaço acima */
+    border-top: 1px dashed var(--neutral-gray); /* Linha separadora */
+    margin-top: 0.5rem;
+  }
+}
+
+/* Estilos para a Página de Hábitos */
+.page-header-custom { /* Similar ao tasks-header */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem; /* Equivalente a mb-6 */
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.add-habit-button { /* Similar ao add-task-button */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* .habit-list-container já usa a classe .card que está definida */
+
+.habit-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.habit-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--neutral-gray); /* */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.habit-item:last-child {
+  border-bottom: none;
+}
+
+.habit-item:hover {
+  background-color: var(--neutral-gray-light); /* */
+}
+
+.habit-item-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-grow: 1;
+  margin-right: 1rem;
+}
+
+.habit-complete-button {
+  height: 2rem; /* Aumentar um pouco para melhor clique */
+  width: 2rem;
+  border-radius: 9999px; /* Círculo */
+  border: 2px solid var(--primary-blue-medium); /* */
+  background-color: transparent;
+  color: var(--primary-blue-medium); /* */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem; /* Tamanho do check */
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.habit-complete-button.done {
+  background-color: var(--primary-blue-medium); /* */
+  color: white; /* */
+}
+
+.habit-complete-button:not(.done):hover {
+  background-color: var(--primary-blue-light); /* */
+}
+
+
+.habit-name {
+  color: var(--neutral-gray-darker); /* */
+  font-size: 0.9rem;
+}
+
+.habit-item.completed .habit-name {
+  /* Pode adicionar um estilo se quiser, mas a marcação pelo botão já é um bom indicador */
+  /* text-decoration: line-through; */
+  /* color: var(--neutral-gray-medium); */
+}
+
+.habit-item-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.habit-streak {
+  font-size: 0.8rem;
+  font-weight: 500; /* */
+  color: var(--primary-purple-medium); /* */ /* Usando roxo para streak */
+  background-color: var(--primary-purple-light); /* */
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px; /* */
+}
+
+.habit-category {
+  font-size: 0.75rem; /* */
+  color: var(--neutral-gray-dark); /* */
+  background-color: var(--neutral-gray); /* */
+  padding: 0.125rem 0.5rem; /* */
+  border-radius: 9999px; /* */
+}
+
+/* Responsividade para a lista de hábitos (similar à lista de tarefas) */
+@media (max-width: 700px) { /* Ajuste o breakpoint se necessário */
+  .habit-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .habit-item-content {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .habit-item-details {
+    width: 100%;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--neutral-gray); /* */
+    margin-top: 0.75rem;
+  }
+}
+/* Estilos para a Página de Rotinas */
+.add-routine-button { /* Similar ao add-task-button */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.routine-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Grid responsivo */
+  gap: 1.5rem; /* Espaçamento entre os cards */
+}
+
+.routine-card {
+  /* A classe .card já fornece a base: background, shadow, border-radius, padding, border */
+  display: flex;
+  flex-direction: column;
+  border-left: 4px solid var(--primary-blue-medium); /* Destaque de cor */
+}
+
+.routine-card.inactive {
+  border-left-color: var(--neutral-gray-medium);
+  opacity: 0.7;
+}
+
+.routine-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.routine-name {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  color: var(--neutral-gray-darker);
+}
+
+.routine-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 500;
+  color: var(--primary-purple-dark);
+  background-color: var(--primary-purple-light);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.button-icon-xs { /* Para o ícone de IA */
+  height: 0.875rem; /* 14px */
+  width: 0.875rem; /* 14px */
+}
+
+.routine-time {
+  font-size: 0.875rem; /* text-sm */
+  color: var(--neutral-gray-medium);
+  margin-bottom: 0.75rem;
+}
+
+.routine-description {
+  font-size: 0.875rem; /* text-sm */
+  color: var(--neutral-gray-dark);
+  margin-bottom: 1rem;
+  flex-grow: 1; /* Para empurrar o footer para baixo se o card tiver altura flexível */
+}
+
+.routine-tasks-preview {
+  margin-bottom: 1rem;
+}
+
+.routine-tasks-preview .preview-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--neutral-gray-medium);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.routine-tasks-preview ul {
+  list-style: none; /* Remover marcadores padrão */
+  padding-left: 0; /* Remover padding padrão */
+  font-size: 0.875rem; /* text-sm */
+  color: var(--neutral-gray-dark);
+}
+
+.routine-tasks-preview ul li::before {
+  content: "•"; /* Adicionar um marcador customizado */
+  color: var(--primary-blue-medium); /* Cor do marcador */
+  display: inline-block; 
+  width: 1em;
+  margin-left: -1em; /* Alinhar com o texto */
+  padding-right: 0.25em; /* Espaço entre marcador e texto */
+}
+
+
+.routine-card-footer {
+  margin-top: auto; /* Empurra o footer para o final do card */
+  padding-top: 1rem;
+  border-top: 1px solid var(--neutral-gray);
+  display: flex;
+  justify-content: flex-end; /* Alinha botões à direita */
+}
+
+/* Estilos para a Página de Perfil */
+.profile-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Grid responsivo */
+  gap: 1.5rem; /* Equivalente a gap-6 */
+}
+
+.profile-section.card {
+  /* .card já fornece a base */
+  padding: 1.5rem; /* Um pouco mais de padding para seções de perfil */
+}
+
+.profile-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem; /* Equivalente a mb-5 */
+}
+
+.profile-section-header .section-title {
+  margin-bottom: 0; /* Reset margin-bottom do section-title padrão */
+}
+
+.edit-section-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem; /* Espaço entre ícone e texto */
+}
+
+.profile-avatar-large {
+  width: 80px; /* Tamanho do avatar */
+  height: 80px;
+  border-radius: 9999px; /* rounded-full */
+  background-color: var(--primary-purple-medium); /* */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem; /* Tamanho da inicial */
+  font-weight: 500;
+  margin: 0 auto 1.5rem auto; /* Centralizar e adicionar margem inferior */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.profile-info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.875rem; /* text-sm */
+  color: var(--neutral-gray-dark); /* */
+  border-bottom: 1px solid var(--neutral-gray); /* */
+}
+
+.profile-info-item:last-child {
+  border-bottom: none;
+}
+
+.profile-info-item strong {
+  color: var(--neutral-gray-darker); /* */
+  font-weight: 500; /* */
+}
+
+.profile-info-item.preference-item {
+  /* Para itens que terão um toggle switch no futuro */
+}
+
+.plan-badge {
+  background-color: var(--primary-purple-light); /* */
+  color: var(--primary-purple-dark); /* */
+  padding: 0.25rem 0.625rem; /* py-1 px-2.5 */
+  border-radius: var(--radius-md); /* */
+  font-weight: 500; /* */
+  font-size: 0.75rem; /* text-xs */
+}
+
+.profile-account-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Espaço entre os botões */
+}
+
+.profile-account-actions .btn {
+  width: 100%; /* Botões ocupam toda a largura */
+}
+
+/* Adicionando estilo para btn-danger (se não existir) */
+.btn-danger {
+  background-color: #FEE2E2; /* Red-100 */
+  color: #B91C1C; /* Red-700 */
+  border-color: #FCA5A5; /* Red-300 */
+}
+
+.btn-danger:hover {
+  background-color: #FECACA; /* Red-200 */
+  border-color: #F87171; /* Red-400 */
+  color: #991B1B; /* Red-800 */
+}

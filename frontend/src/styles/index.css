@@ -1,0 +1,51 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+  background-color: #EFF6FF; /* Cor correspondente a primary-blue-light */
+  color: #4B5563; /* Cor correspondente a neutral-gray-dark */
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500; /* Medium */
+  color: #374151; /* Cor correspondente a neutral-gray-darker */
+}
+
+a {
+  color: #3B82F6; /* Cor correspondente a primary-blue-medium */
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #2563EB; /* Cor correspondente a primary-blue-dark */
+}
+
+#root {
+  isolation: isolate;
+}
