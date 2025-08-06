@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// 1. Define a fonte de dados (datasource) e o gerador (generator)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Usaremos PostgreSQL. É uma ótima escolha para produção.
+  url      = env("DATABASE_URL") // A URL é lida do arquivo .env
+}
+
+
+// 2. Defina os modelos da sua aplicação abaixo
+
+model User {
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  passwordHash      String
+  avatarInitial     String?
+  memberSince       DateTime @default(now())
+  
+  virtualCoins      Int      @default(0)
+
+  // Relações
+  tasks             Task[]
+  habits            Habit[]
+  routines          Routine[]
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  text            String
+  description     String?
+  priority        String
+  
+  completed       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+  
+  userFeedback    String?
+  completionTime  Int?
+  
+  isTemplate      Boolean   @default(false)
+  
+  // Relações
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  routineId       String?
+  routine         Routine?  @relation(fields: [routineId], references: [id])
+}
+
+model Routine {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  timeOfDay     String
+  aiGenerated   Boolean   @default(false)
+  active        Boolean   @default(true)
+  
+  // Relações
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  templateTasks Task[]
+}
+
+model Habit {
+  id              String   @id @default(cuid())
+  name            String
+  category        String?
+  createdAt       DateTime @default(now())
+  
+  currentStreak   Int      @default(0)
+  longestStreak   Int      @default(0)
+  
+  // Relações
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  completions     HabitCompletion[]
+}
+
+model HabitCompletion {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+}
