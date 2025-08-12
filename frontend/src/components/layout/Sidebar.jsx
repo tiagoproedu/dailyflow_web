@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom"
 
 function Sidebar({ isOpen }) {
   const menuItems = [
-    { name: 'Dashboard', icon: 'home', url: '/' },
+    { name: 'Dashboard', icon: 'home', url: '/dashboard' },
     { name: 'Tarefas', icon: 'check-square', url: '/tasks' },
     { name: 'Hábitos', icon: 'repeat', url: '/habits' },
     { name: 'Rotinas', icon: 'calendar', url: '/routines' },
