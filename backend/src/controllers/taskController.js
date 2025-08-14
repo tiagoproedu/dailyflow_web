@@ -2,7 +2,10 @@ const TaskService = require("../services/taskServices");
 
 const getAllTasks = async (req, res) => {
   try {
-    const tasks = await TaskService.findAllTasks();
+
+    const userId = req.user.id;
+
+    const tasks = await TaskService.findAllTasks(userId);
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: "Erro ao buscar tarefas" });
@@ -11,7 +14,14 @@ const getAllTasks = async (req, res) => {
 
 const createNewTask = async (req, res) => {
   try {
-    const newTask = await TaskService.createTasks(req.body);
+    
+    const taskData = req.body;
+
+    const userId = req.user.id;
+
+    console.log("User ID:", userId);
+
+    const newTask = await TaskService.createTask(taskData, userId);
     res.status(201).json(newTask);
   } catch (error) {
     res.status(500).json({ error: "Não foi possivel criar a tarefa." });

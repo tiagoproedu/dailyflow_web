@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Modal from '../components/ui/Modal';
+import apiClient from '../services/api';
 
 function TasksPage() {
   // Estado para armazenar as tarefas
@@ -17,8 +18,7 @@ function TasksPage() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/tasks');
-        const data = await response.json();
+        const data = await apiClient('/tasks');
         setTasks(data);
       } catch (error) {
         console.error('Erro ao buscar tarefas:', error);
@@ -38,19 +38,7 @@ function TasksPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:3001/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTask),
-      });
-
-      if (!response.ok) {
-        throw new Error('Falha ao criar tarefa');
-      }
-
-      const createdTask = await response.json();
+      const createdTask = await apiClient('/tasks', 'POST', newTask);
 
       // Adiciona a nova tarefa ao início da lista
       setTasks(prevTasks => [createdTask, ...prevTasks]);

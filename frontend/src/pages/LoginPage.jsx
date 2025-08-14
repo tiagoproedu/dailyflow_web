@@ -1,9 +1,11 @@
 // frontend/src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   // Estado para os dados do formulário
   const [ formData, setFormData ] = useState({
@@ -42,7 +44,7 @@ function LoginPage() {
 
       // Sucesso no login
       console.log('Login bem-sucedido:', data);
-      localStorage.setItem('authToken', data.token);
+      login(data.user, data.token);
 
       navigate('/dashboard'); // Redireciona para a página do dashboard
 
