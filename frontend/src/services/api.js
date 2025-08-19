@@ -31,6 +31,10 @@ const apiClient = async (endpoint, method = 'GET', body = null) => {
   // 4. Executa a requisição fetch
   const response = await fetch(`${API_URL}${endpoint}`, config);
 
+  if (response.status === 204) {
+    return null;
+  }
+
   // 5. Lida com a resposta
   const data = await response.json();
   if (!response.ok) {
