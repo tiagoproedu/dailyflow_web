@@ -34,23 +34,27 @@ const updateTask = async (taskId, userId, updateData) => {
   }
 
   // 2. Atualiza a tarefa com os novos dados recebidos
+  const dataToUpdate = {};
+  if (updateData.text !== undefined) dataToUpdate.text = updateData.text;
+  if (updateData.description !== undefined) dataToUpdate.description = updateData.description;
+  if (updateData.priority !== undefined) dataToUpdate.priority = updateData.priority;
+  if (updateData.completed !== undefined) {
+    dataToUpdate.completed = updateData.completed;
+    dataToUpdate.completedAt = updateData.completed ? new Date() : null;
+  }
+
   const updatedTask = await prisma.task.update({
-    where: { id: taskId },
-    data: {
-      text: updateData.text,
-      description: updateData.description,
-      priority: updateData.priority,
-      completed: updateData.completed,
-      completedAt: updateData.completed ? new Date() : null,
-    },
+    where: {id: taskId},
+    data: dataToUpdate,
   });
+
   return updatedTask;
 };
 
-const deleteTask = async (taksId, userId) => {
+const deleteTask = async (taskId, userId) => {
     const task = await prisma.task.findFirst({
         where: {
-            id: taksId,
+            id: taskId,
             userId: userId,
         }
     });
@@ -61,7 +65,7 @@ const deleteTask = async (taksId, userId) => {
 
     await prisma.task.delete({
         where: {
-            id: taksId,
+            id: taskId,
         }
     });
 
