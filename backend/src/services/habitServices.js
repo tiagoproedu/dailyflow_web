@@ -34,7 +34,57 @@ const createHabit = async (habitData, userId) => {
     });
 };
 
+/**
+ * Atualiza um hábito existente.
+ * @param {string} habitId - O ID do hábito a ser atualizado.
+ * @param {string} userId - O ID do utilizador.
+ * @param {object} habitData - Os dados atualizados do hábito (name, category).
+ * @returns {Promise<object>} O hábito atualizado.
+ */
+
+const updateHabit = async (habitId, userId, habitData) => {
+    const { name, category } = habitData;
+
+    // Verifica se o hábito pertence ao utilizador
+    const habit = await prisma.habit.findFirst({
+        where: { id: habitId, userId: userId },
+    });
+
+    if (!habit) {
+        throw new Error('Hábito não encontrado ou não pertence ao utilizador.');
+    }
+
+    return await prisma.habit.update({
+        where: { id: habitId },
+        data: { name, category },
+    });
+};
+
+/**
+ * Apaga um hábito existente.
+ * @param {string} habitId - O ID do hábito a ser apagado.
+ * @param {string} userId - O ID do utilizador.
+ * @returns {Promise<object>} O hábito apagado.
+ */
+
+const deleteHabit = async (habitId, userId) => {
+    // Verifica se o hábito pertence ao utilizador
+    const habit = await prisma.habit.findFirst({
+        where: { id: habitId, userId: userId },
+    });
+
+    if (!habit) {
+        throw new Error('Hábito não encontrado ou não pertence ao utilizador.');
+    }
+
+    await prisma.habit.delete({
+        where: { id: habitId },
+    });
+};
+
 module.exports = {
     findAllHabits,
-    createHabit
+    createHabit,
+    updateHabit,
+    deleteHabit
 };

@@ -20,7 +20,37 @@ const createNewHabit = async (req, res) => {
     }
 };
 
+const updateHabit = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const updatedHabit = await HabitService.updateHabit(id, userId, req.body);
+        res.json(updatedHabit);
+    } catch (error) {
+        if (error.message.includes('Hábito não encontrado')) {
+            return res.status(404).json({ error: error.message });
+        }
+        res.status(500).json({ error: 'Não foi possivel atualizar o hábito.' });
+    }
+};
+
+const deleteHabit = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        await HabitService.deleteHabit(id, userId);
+        res.status(204).send();
+    } catch (error) {
+        if (error.message.includes('Hábito não encontrado')) {
+            return res.status(404).json({ error: error.message });
+        }
+        res.status(500).json({ error: 'Não foi possivel apagar o hábito.' });
+    }
+};
+
 module.exports = {
     getAllHabits,
-    createNewHabit
+    createNewHabit,
+    updateHabit,
+    deleteHabit
 };

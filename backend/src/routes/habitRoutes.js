@@ -7,5 +7,7 @@ router.use(protect);
 
 router.get('/', HabitController.getAllHabits);
 router.post('/', HabitController.createNewHabit);
+router.patch('/:id', HabitController.updateHabit);
+router.delete('/:id', HabitController.deleteHabit);
 
 module.exports = router;
