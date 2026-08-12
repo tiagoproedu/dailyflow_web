@@ -86,10 +86,10 @@ model Habit {
 
 model HabitCompletion {
   id        String   @id @default(cuid())
-  date      DateTime @db.Date
-  
+  date      DateTime @db.Date // Armazena apenas a data, sem a hora
   habitId   String
   habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
 
+  // Garante que só pode haver uma conclusão por hábito por dia
   @@unique([habitId, date])
 }

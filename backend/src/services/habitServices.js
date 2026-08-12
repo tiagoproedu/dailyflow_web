@@ -82,9 +82,56 @@ const deleteHabit = async (habitId, userId) => {
     });
 };
 
+/**
+ * Marca ou desmarca um hábito como concluído para a data atual.
+ * @param {string} habitId - O ID do hábito.
+ * @param {string} userId - O ID do utilizador.
+ * @returns {Promise<object>} O estado da conclusão.
+ */
+const toggleHabitCompletion = async (habitId, userId) => {
+  // Garante que o hábito pertence ao utilizador
+  const habit = await prisma.habit.findFirst({
+    where: { id: habitId, userId: userId },
+  });
+
+  if (!habit) {
+    throw new Error('Hábito não encontrado ou não pertence ao utilizador.');
+  }
+
+  // Pega na data de hoje, ignorando as horas
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Verifica se já existe uma conclusão para este hábito hoje
+  const existingCompletion = await prisma.habitCompletion.findFirst({
+    where: {
+      habitId: habitId,
+      date: today,
+    },
+  });
+
+  if (existingCompletion) {
+    // Se já foi concluído hoje, apaga a conclusão (desmarca)
+    await prisma.habitCompletion.delete({
+      where: { id: existingCompletion.id },
+    });
+    return { completed: false };
+  } else {
+    // Se não foi concluído hoje, cria uma nova conclusão (marca)
+    await prisma.habitCompletion.create({
+      data: {
+        habitId: habitId,
+        date: today,
+      },
+    });
+    return { completed: true };
+  }
+};
+
 module.exports = {
     findAllHabits,
     createHabit,
     updateHabit,
-    deleteHabit
+    deleteHabit,
+    toggleHabitCompletion
 };

@@ -48,9 +48,24 @@ const deleteHabit = async (req, res) => {
     }
 };
 
+const toggleHabitCompletion = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const result = await HabitService.toggleHabitCompletion(id, userId);
+        res.json(result);
+    } catch (error) {
+        if (error.message.includes('Hábito não encontrado')) {
+            return res.status(404).json({ error: error.message });
+        }
+        res.status(500).json({ error: 'Não foi possivel alternar a conclusão do hábito.' });
+    }
+}
+
 module.exports = {
     getAllHabits,
     createNewHabit,
     updateHabit,
-    deleteHabit
+    deleteHabit,
+    toggleHabitCompletion
 };

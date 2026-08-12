@@ -1,5 +1,5 @@
 // src/pages/HabitsPage.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Modal from '../components/ui/Modal';
 import apiClient from '../services/api';
 
@@ -27,6 +27,7 @@ function HabitsPage() {
     category: '',
   });
 
+  // Busca os hábitos ao carregar a página
   useEffect(() => {
     const fetchHabits = async () => {
       try {
@@ -38,6 +39,20 @@ function HabitsPage() {
     };
     fetchHabits();
   }, []);
+
+  // Função para verificar se o hábito foi completado hoje
+  const todayString = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.toISOString().split('T')[0];
+  }, []);
+
+  // Verifica se o hábito foi completado hoje
+  const isCompletedToday = (habit) => {
+    return habit.completions?.some(
+      (comp) => comp.date.split('T')[0] === todayString
+    );
+  };
 
   const openAddHabitModal = () => {
     setEditingHabit(null);
@@ -91,8 +106,28 @@ function HabitsPage() {
     }
   };
   
-  const handleToggleHabit = (habitId) => {
-    console.log(`Hábito ${habitId} clicado. A lógica de conclusão será implementada a seguir.`);
+  const handleToggleHabit = async (habitId) => {
+    try {
+      // Chama o novo endpoint
+      await apiClient(`/habits/${habitId}/toggle-completion`, 'POST');
+
+      // Atualiza o estado local para uma resposta visual imediata
+      setHabits(currentHabits =>
+        currentHabits.map(h => {
+          if (h.id === habitId) {
+            const completed = isCompletedToday(h);
+            // Simula a adição/remoção da conclusão no estado
+            const newCompletions = completed
+              ? h.completions.filter(c => c.date.split('T')[0] !== todayString)
+              : [...(h.completions || []), { date: new Date().toISOString() }];
+            return { ...h, completions: newCompletions };
+          }
+          return h;
+        })
+      );
+    } catch (error) {
+      console.error('Erro ao marcar/desmarcar hábito:', error);
+    }
   };
 
   return (
@@ -115,10 +150,9 @@ function HabitsPage() {
             {habits.map(habit => (
               <li key={habit.id} className={`habit-item task-item`}> {/* Reutilizando task-item para consistência */}
                 <div className="habit-item-content task-item-content"> {/* Reutilizando task-item-content */}
-                  {/* **ALTERAÇÃO 1: Substituímos o botão por um checkbox idêntico ao de Tarefas** */}
                   <input
                     type="checkbox"
-                    // checked={habit.completedToday} // Lógica a ser implementada
+                    checked={isCompletedToday(habit)} // Controlado pelo estado
                     onChange={() => handleToggleHabit(habit.id)}
                     className="task-checkbox"
                   />
