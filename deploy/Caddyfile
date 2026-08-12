@@ -1,0 +1,24 @@
+# O TLS é terminado pelo `tailscale serve`, por isso o Caddy fala HTTP puro aqui.
+:8080 {
+	encode gzip
+
+	# A API vai para o container do backend
+	handle /api/* {
+		reverse_proxy api:3001
+	}
+
+	# Todo o resto é o app React (SPA: qualquer rota cai no index.html)
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+
+		# O service worker nunca pode ficar presa em cache, senão o app trava numa versão velha
+		@sw path /sw.js /registerSW.js /manifest.webmanifest
+		header @sw Cache-Control "no-cache, no-store, must-revalidate"
+
+		# Os assets têm hash no nome, então podem ser cacheados agressivamente
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+	}
+}

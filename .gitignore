@@ -30,3 +30,6 @@ backend/.env
 /generated/prisma
 
 .env.backup-windows
+
+# build do frontend enviado no deploy
+deploy/dist/

@@ -1,0 +1,41 @@
+# Este compose roda no servidor, em ~/dailyflow-app, onde o layout é:
+#   compose.yaml · Caddyfile · .env · backend/ (código) · dist/ (build do frontend)
+# Use `deploy/publicar.sh` para enviar tudo e subir.
+services:
+  api:
+    build: ./backend
+    container_name: dailyflow_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      CHAVE_SECRETA: ${CHAVE_SECRETA}
+    networks:
+      - interna
+      - banco
+    # Sem `ports`: a API só é acessível pelo Caddy, nunca direto
+
+  web:
+    image: caddy:2-alpine
+    container_name: dailyflow_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./dist:/srv:ro
+    ports:
+      # Loopback: é daqui que o `tailscale serve` pega para publicar com HTTPS
+      - '127.0.0.1:8080:8080'
+      # Acesso direto pelo tailnet, sem HTTPS. Serve para testar no celular antes de
+      # configurar o `tailscale serve` — mas sem HTTPS o service worker não registra,
+      # então o app NÃO fica instalável por aqui. Pode remover depois.
+      - '100.96.187.34:8080:8080'
+    networks:
+      - interna
+
+networks:
+  interna:
+  banco:
+    # Rede criada pelo compose do Postgres (~/dailyflow-db)
+    external: true
+    name: dailyflow-db_default

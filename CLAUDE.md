@@ -115,3 +115,36 @@ cd frontend && npm run dev                             # porta 5173
 **Atenção:** o projeto foi desenvolvido no Windows. Ao trocar de máquina é preciso
 `rm -rf node_modules && npm install && npx prisma generate` — o Prisma compila um binário
 específico por sistema operacional.
+
+## Publicando (PWA no celular)
+
+```bash
+./deploy/publicar.sh     # compila, envia e sobe tudo no fibbo-server
+```
+
+O script manda o código para `~/dailyflow-app` no servidor (via `tar` sobre ssh — o
+servidor **não tem rsync**) e sobe dois containers:
+
+| Container | Papel |
+|---|---|
+| `dailyflow_api` | backend Node. Sem porta publicada: só o Caddy fala com ele. |
+| `dailyflow_web` | Caddy: serve `dist/` e faz proxy de `/api` → `api:3001`. |
+
+O `.env` de produção mora **apenas no servidor** (`~/dailyflow-app/.env`, chmod 600) e nunca
+é enviado pelo script. Lá o `DATABASE_URL` aponta para `db:5432`, pelo nome do serviço na
+rede `dailyflow-db_default`.
+
+O TLS é terminado pelo `tailscale serve`, por isso o Caddy fala HTTP puro na 8080.
+
+### PWA
+
+`vite-plugin-pwa` gera o manifest e o service worker. Duas regras importantes:
+
+- **Chamadas a `/api` são `NetworkOnly`.** Hábito marcado e tarefa concluída precisam
+  refletir o servidor — dado de cache aqui seria mentira na tela.
+- O Caddy manda `no-store` em `sw.js`, `registerSW.js` e `manifest.webmanifest`, senão o
+  app trava numa versão velha para sempre.
+
+Os ícones em `frontend/public/` são gerados a partir de
+`dailyflow/landingPage/src/assets/logo.png`. O `pwa-maskable-512.png` usa o logo a 60% do
+quadro para sobreviver ao recorte circular do Android.

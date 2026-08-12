@@ -1,6 +1,8 @@
 // frontend/src/services/api.js
 
-const API_URL = 'http://localhost:3001/api';
+// Em produção o Caddy serve o app e faz proxy de /api para o backend, por isso o
+// caminho relativo. Em desenvolvimento cai no backend local.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 // Esta será a nossa função central para fazer requisições
 const apiClient = async (endpoint, method = 'GET', body = null) => {
