@@ -9,6 +9,7 @@ function TasksPage() {
   const [editingTask, setEditingTask] = useState(null);
   // Estado para controlar se o modal está aberto ou fechado
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formError, setFormError] = useState(null);
   // Estado para o menu de tarefa que está aberto
   const [openMenuId, setOpenMenuId] = useState(null);
   // Estado para armazenar os dados da nova tarefa
@@ -66,6 +67,7 @@ const handleToggleComplete = async (taskId, currentStatus) => {
   const openAddTaskModal = () => {
     setEditingTask(null);
     setFormData({ text: '', description: '', priority: 'baixa' });
+    setFormError(null);
     setIsModalOpen(true);
   }
 
@@ -76,6 +78,7 @@ const handleToggleComplete = async (taskId, currentStatus) => {
       description: task.description || '',
       priority: task.priority,
     });
+    setFormError(null);
     setIsModalOpen(true);
     setOpenMenuId(null);
   };
@@ -94,6 +97,7 @@ const handleFormSubmit = async (e) => {
         setTasks(prevTasks => prevTasks.map(t => t.id === editingTask.id ? updatedTask : t));
         closeModal();
       } catch (error) {
+        setFormError(error.message);
         console.error("Erro ao atualizar tarefa:", error);
       }
     } else {
@@ -102,6 +106,8 @@ const handleFormSubmit = async (e) => {
         setTasks(prevTasks => [createdTask, ...prevTasks]);
         closeModal();
       } catch (error) {
+        // Sem isto o formulário falhava em silêncio.
+        setFormError(error.message);
         console.error("Erro ao criar tarefa:", error);
       }
     }
@@ -138,20 +144,30 @@ const handleFormSubmit = async (e) => {
             {tasks.map(task => (
               <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
                 <div className="task-item-content">
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => handleToggleComplete(task.id, task.completed)}
-                    className="task-checkbox"
-                  />
-                  <span className="task-text">{task.text}</span>
+                  {/* O <label> dá nome ao checkbox (antes o leitor de tela só dizia
+                      "caixa de seleção") e faz o texto inteiro virar área de toque. */}
+                  <label className="item-toggle">
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => handleToggleComplete(task.id, task.completed)}
+                      className="task-checkbox"
+                    />
+                    <span className="task-text">{task.text}</span>
+                  </label>
                 </div>
                 <div className="task-item-details">
                   <span className={`task-priority ${getPriorityClass(task.priority)}`}>
                     {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                   </span>
                   <div className="task-actions-menu">
-                  <button onClick={() => setOpenMenuId(openMenuId === task.id ? null : task.id)} className="task-action-button">
+                  <button
+                    type="button"
+                    onClick={() => setOpenMenuId(openMenuId === task.id ? null : task.id)}
+                    className="task-action-button"
+                    aria-label={`Ações da tarefa ${task.text}`}
+                    aria-expanded={openMenuId === task.id}
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon-sm">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                     </svg>
@@ -180,6 +196,7 @@ const handleFormSubmit = async (e) => {
 
       <Modal title={editingTask ? "Editar Tarefa" : "Adicionar Nova Tarefa"} isOpen={isModalOpen} onClose={closeModal}>
         <form onSubmit={handleFormSubmit}>
+          {formError && <p className="form-error" role="alert">{formError}</p>}
           <div className="form-group" style={{ marginBottom: '1rem' }}>
             <label htmlFor="text" style={{ display: 'block', marginBottom: '0.5rem' }}>Tarefa (Obrigatório)</label>
             <input

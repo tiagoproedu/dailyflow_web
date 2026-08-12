@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom"
 
-function Sidebar({ isOpen }) {
+function Sidebar({ isOpen, onNavigate, onClose }) {
   const menuItems = [
     { name: 'Dashboard', icon: 'home', url: '/dashboard' },
     { name: 'Tarefas', icon: 'check-square', url: '/tasks' },
@@ -39,21 +39,32 @@ function Sidebar({ isOpen }) {
   }
 
   return (
-    <aside className={`sidebar ${isOpen ? '' : 'closed'}`}>
+    <aside className={`sidebar ${isOpen ? '' : 'closed'}`} id="menu-lateral">
       <div className="sidebar-content">
         <div className="sidebar-menu-title">
           <h2>Menu</h2>
+          {/* Só aparece no celular: no desktop a barra é fixa e não fecha. */}
+          <button
+            type="button"
+            className="sidebar-close-button"
+            onClick={onClose}
+            aria-label="Fechar menu"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
-        
-        <nav className="sidebar-nav">
+
+        <nav className="sidebar-nav" aria-label="Menu principal">
           <ul>
             {menuItems.map((item) => (
               <li key={item.name}>
-                <NavLink 
-                  to={item.url || '#'} 
+                <NavLink
+                  to={item.url || '#'}
                   className={({ isActive }) => isActive ? 'active' : ''}
+                  onClick={onNavigate}
                 >
-                  <span>{icons[item.icon]}</span>
+                  {/* Os ícones são decorativos: o texto ao lado já diz tudo. */}
+                  <span aria-hidden="true">{icons[item.icon]}</span>
                   {item.name}
                 </NavLink>
               </li>

@@ -201,13 +201,13 @@ function RoutinesPage() {
 
       {feedback && (
         <div className="card" style={{ marginBottom: '1rem', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>{feedback}</span>
+          <span role="status">{feedback}</span>
           <button className="btn btn-outline btn-xs" onClick={() => setFeedback(null)}>Fechar</button>
         </div>
       )}
 
       {isLoading ? (
-        <p style={{ padding: '1.5rem', textAlign: 'center', color: '#6B7280' }}>A carregar rotinas...</p>
+        <p role="status" style={{ padding: '1.5rem', textAlign: 'center', color: '#6B7280' }}>A carregar rotinas…</p>
       ) : routines.length === 0 ? (
         <div className="card" style={{ padding: '1.5rem', textAlign: 'center', color: '#6B7280' }}>
           Nenhuma rotina ainda. Crie a sua primeira rotina matinal ou noturna!
@@ -226,8 +226,11 @@ function RoutinesPage() {
                   )}
                   <div className="task-actions-menu">
                     <button
+                      type="button"
                       className="routine-action-button task-action-button"
                       onClick={() => setOpenMenuId(openMenuId === routine.id ? null : routine.id)}
+                      aria-label={`Ações da rotina ${routine.name}`}
+                      aria-expanded={openMenuId === routine.id}
                     >
                       <DotsIcon />
                     </button>

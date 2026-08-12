@@ -1,21 +1,48 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../layout/Sidebar'; // Importe a Sidebar
 import Header from '../layout/Header';   // Importe o Header
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Este componente vai renderizar o layout principal do app (Header + Sidebar + Conteúdo)
 // Apenas para usuários autenticados.
 const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+  const location = useLocation();
+
+  // Ao trocar de página no celular, a gaveta tem de sair da frente sozinha.
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   return (
     <div className="app-container">
-      <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
+      <Header
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+        isMenuOpen={sidebarOpen}
+      />
       <div className="main-layout">
-        <Sidebar isOpen={sidebarOpen} />
-        <Outlet /> {/* O <Outlet /> é onde a página atual (ex: /dashboard) será renderizada */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onNavigate={() => setSidebarOpen(false)}
+          onClose={() => setSidebarOpen(false)}
+        />
+        {sidebarOpen && (
+          <button
+            type="button"
+            className="sidebar-backdrop"
+            aria-label="Fechar menu"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        {/* O <main> mora aqui, e não em cada página, para que toda rota tenha a
+            marcação de "conteúdo principal" e o link de pular tenha um destino
+            fixo. O tabIndex=-1 é o que faz o foco realmente saltar para cá. */}
+        <main className="main-content" id="conteudo" tabIndex={-1}>
+          <Outlet /> {/* O <Outlet /> é onde a página atual (ex: /dashboard) será renderizada */}
+        </main>
       </div>
     </div>
   );
@@ -27,7 +54,7 @@ function ProtectedRoute() {
 
   // 1. Se ainda estivermos a verificar a autenticação, não mostramos nada (ou um spinner)
   if (isLoading) {
-    return <div>Carregando...</div>; // Ou um componente de loading mais bonito
+    return <p role="status">A carregar…</p>;
   }
 
   // 2. Se não houver usuário, redireciona para a página de login

@@ -56,6 +56,32 @@ web/
   `page-container`). Estilos ficam em `src/styles/App.css`.
 - **Commits:** mensagens em português, prefixos `feat:` / `fix:` / `chore:`.
 
+## Acessibilidade
+
+O app é usado principalmente no celular, com uma mão. Regras que valem para
+qualquer tela nova:
+
+- **Todo formulário longo vive dentro do `Modal`**, que já rola por dentro e gruda
+  o `.form-actions` no rodapé. Não crescer o formulário fora dele.
+- **Alvo de toque mínimo de 44px** em qualquer coisa clicável. `.btn-xs` é a única
+  exceção (36px no celular), e só onde o botão é secundário.
+- **Botão só com ícone precisa de `aria-label`**, e o `<svg>` dentro dele leva
+  `aria-hidden="true"`.
+- **Checkbox sempre dentro de um `<label>`** (classe `item-toggle`): é o que dá nome
+  ao campo para o leitor de tela e aumenta a área de toque.
+- **Nunca `onClick` numa `<div>`.** Use `<button>` — teclado e leitor de tela vêm de
+  graça.
+- **Cor nunca é a única pista.** Os pontinhos de hábito usam contorno vs. preenchido;
+  erro de formulário usa `.form-error`, com borda e texto.
+- **Erro de API vira texto na tela**, não só `console.error`.
+- **Contraste:** `--neutral-gray-medium` é o cinza mais claro permitido para texto e
+  bordas (4,8:1). Abaixo disso, só traço decorativo (`--neutral-gray-line`).
+- Mensagens que aparecem sozinhas levam `role="status"`; erros, `role="alert"`.
+
+> O `npm run lint` já falha na origem com ~15 erros de `react/prop-types` — o projeto
+> nunca declarou PropTypes. Ao mexer, compare a contagem antes e depois em vez de
+> esperar zero.
+
 ## Estado das funcionalidades
 
 | Funcionalidade | Backend | Frontend |

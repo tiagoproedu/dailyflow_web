@@ -46,7 +46,7 @@ function RegisterPage() {
         <h1 className="page-title" style={{ textAlign: 'center' }}>Criar Conta</h1>
         
         {/* Exibe a mensagem de erro, se houver */}
-        {error && <p style={{ color: '#B91C1C', textAlign: 'center', background: '#FEE2E2', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>{error}</p>}
+        {error && <p role="alert" style={{ color: '#B91C1C', textAlign: 'center', background: '#FEE2E2', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>{error}</p>}
 
         <form onSubmit={handleFormSubmit}>
           <div className="form-group" style={{ marginBottom: '1rem' }}>

@@ -8,25 +8,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
   z-index: 2000;
 }
 
+/* A caixa é uma coluna: cabeçalho fixo em cima e corpo que rola.
+   Sem o `max-height` o formulário crescia para fora da tela e o botão de salvar
+   ficava inalcançável — não havia nada para rolar, porque o overlay é `fixed`. */
 .modal-content {
   background: white;
-  padding: 1.5rem;
   border-radius: var(--radius-lg);
-  width: 90%;
+  width: 100%;
   max-width: 500px;
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem); /* dvh desconta a barra do navegador no celular */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* O foco vai para a caixa ao abrir, só para o leitor de tela anunciar o diálogo.
+   Não é um foco de teclado, então não desenha o anel. */
+.modal-content:focus {
+  outline: none;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   border-bottom: 1px solid var(--neutral-gray);
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -42,5 +57,58 @@
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
-  color: var(--neutral-gray-medium);
+  color: var(--neutral-gray-dark);
+  /* 44px é o alvo de toque recomendado; o "x" sozinho dava uns 20px. */
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.modal-close-button:hover {
+  background-color: var(--neutral-gray);
+  color: var(--neutral-gray-darker);
+}
+
+.modal-body {
+  padding: 1.25rem 1.5rem 0;
+  overflow-y: auto;
+  /* Impede que a rolagem "vaze" para a página de trás ao chegar no fim. */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* O botão de salvar gruda no rodapé do modal. Assim ele está sempre visível,
+   mesmo com o formulário longo e o teclado do celular aberto. */
+.modal-body .form-actions {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  border-top: 1px solid var(--neutral-gray);
+  padding: 1rem 0;
+  margin-top: 1rem;
+}
+
+/* No celular o modal vira uma folha que sobe pela base: mais perto do polegar
+   e sem desperdiçar altura com margens. */
+@media (max-width: 640px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    max-width: none;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .modal-body .form-actions .btn {
+    width: 100%;
+  }
 }

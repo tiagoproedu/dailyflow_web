@@ -23,6 +23,7 @@ function HabitsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [formError, setFormError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -61,6 +62,7 @@ function HabitsPage() {
   const openAddHabitModal = () => {
     setEditingHabit(null);
     setFormData({ name: '', category: '', cue: '', cueTime: '', intrinsic: false });
+    setFormError(null);
     setIsModalOpen(true);
   };
 
@@ -73,6 +75,7 @@ function HabitsPage() {
       cueTime: habit.cueTime || '',
       intrinsic: habit.intrinsic || false,
     });
+    setFormError(null);
     setIsModalOpen(true);
     setOpenMenuId(null);
   };
@@ -111,6 +114,9 @@ function HabitsPage() {
       }
       closeModal();
     } catch (error) {
+      // Antes isto só ia para o console: o formulário simplesmente não reagia e
+      // quem estava do outro lado ficava sem saber se salvou ou não.
+      setFormError(error.message);
       console.error(`Erro ao ${editingHabit ? 'atualizar' : 'criar'} hábito:`, error);
     }
   };
@@ -170,27 +176,36 @@ function HabitsPage() {
             {habits.map(habit => (
               <li key={habit.id} className={`habit-item task-item`}> {/* Reutilizando task-item para consistência */}
                 <div className="habit-item-content task-item-content"> {/* Reutilizando task-item-content */}
-                  <input
-                    type="checkbox"
-                    checked={isCompletedToday(habit)} // Controlado pelo estado
-                    onChange={() => handleToggleHabit(habit.id)}
-                    className="task-checkbox"
-                  />
-                  <div>
+                  {/* O <label> nomeia o checkbox para o leitor de tela e transforma
+                      o nome do hábito em área de toque. A frase do gatilho fica de
+                      fora: é informação, não deve marcar o hábito sem querer. */}
+                  <label className="item-toggle">
+                    <input
+                      type="checkbox"
+                      checked={isCompletedToday(habit)} // Controlado pelo estado
+                      onChange={() => handleToggleHabit(habit.id)}
+                      className="task-checkbox"
+                    />
                     <span className="habit-name task-text">{habit.name}</span> {/* Reutilizando task-text */}
-                    {buildIntention(habit) ? (
-                      <p className="habit-intention">{buildIntention(habit)}</p>
-                    ) : (
-                      <p className="habit-intention habit-intention-missing">
-                        Sem gatilho definido — edite e responda &quot;quando?&quot;
-                      </p>
-                    )}
-                  </div>
+                  </label>
+                  {buildIntention(habit) ? (
+                    <p className="habit-intention">{buildIntention(habit)}</p>
+                  ) : (
+                    <p className="habit-intention habit-intention-missing">
+                      Sem gatilho definido — edite e responda &quot;quando?&quot;
+                    </p>
+                  )}
                 </div>
                 <div className="habit-item-details task-item-details"> {/* Reutilizando task-item-details */}
                   <span className="habit-category">{habit.category}</span>
                   <div className="task-actions-menu">
-                    <button onClick={() => setOpenMenuId(openMenuId === habit.id ? null : habit.id)} className="task-action-button">
+                    <button
+                      type="button"
+                      onClick={() => setOpenMenuId(openMenuId === habit.id ? null : habit.id)}
+                      className="task-action-button"
+                      aria-label={`Ações do hábito ${habit.name}`}
+                      aria-expanded={openMenuId === habit.id}
+                    >
                       <DotsIcon />
                     </button>
                     {/* **ALTERAÇÃO 2: Adicionamos os ícones SVG aos botões de ação** */}
@@ -218,6 +233,7 @@ function HabitsPage() {
 
       <Modal title={editingHabit ? "Editar Hábito" : "Adicionar Novo Hábito"} isOpen={isModalOpen} onClose={closeModal}>
         <form onSubmit={handleFormSubmit}>
+            {formError && <p className="form-error" role="alert">{formError}</p>}
             <div className="form-group" style={{ marginBottom: '1rem' }}>
                 <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Nome do Hábito (Obrigatório)</label>
                 <input

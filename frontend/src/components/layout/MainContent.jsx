@@ -42,29 +42,24 @@ function MainContent() {
 
   if (isLoading) {
     return (
-      <main className={'main-content'}>
-        <div className="page-container">
-          <p style={{ color: '#6B7280' }}>A carregar o seu dia...</p>
-        </div>
-      </main>
+      <div className="page-container">
+        <p role="status">A carregar o seu dia…</p>
+      </div>
     );
   }
 
   if (!summary) {
     return (
-      <main className={'main-content'}>
-        <div className="page-container">
-          <p style={{ color: '#6B7280' }}>Não foi possível carregar o dashboard.</p>
-        </div>
-      </main>
+      <div className="page-container">
+        <p role="alert">Não foi possível carregar o dashboard.</p>
+      </div>
     );
   }
 
   const { user, stats, recentTasks, habitsToday, routinesToday } = summary;
 
   return (
-    <main className={'main-content'}>
-      <div className="page-container">
+    <div className="page-container">
         <h1 className="page-title">Olá, {user?.name?.split(' ')[0] || 'você'}</h1>
 
         <div className="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3" style={{ marginBottom: '2rem' }}>
@@ -135,30 +130,38 @@ function MainContent() {
               <ul className="list">
                 {habitsToday.map((habit) => (
                   <li key={habit.id} className="list-item">
-                    <div
+                    {/* Era uma <div onClick>: invisível para o teclado e para o
+                        leitor de tela. Um <button> resolve os dois de graça. */}
+                    <button
+                      type="button"
+                      className="habit-toggle-button"
+                      aria-pressed={habit.completedToday}
                       onClick={() => handleToggleHabit(habit.id)}
-                      style={{ cursor: 'pointer' }}
                     >
-                      <span
-                        style={{
-                          textDecoration: habit.completedToday ? 'line-through' : 'none',
-                        }}
-                      >
+                      <span className={habit.completedToday ? 'habit-done' : undefined}>
                         {habit.name}
                       </span>
                       {buildIntention(habit) && (
-                        <p className="habit-intention">{buildIntention(habit)}</p>
+                        <span className="habit-intention">{buildIntention(habit)}</span>
                       )}
-                    </div>
-                    <div className="habit-progress">
+                    </button>
+                    {/* Os pontinhos viram uma lista com texto escondido: quem não
+                        enxerga a cor ainda ouve "feito" ou "não feito" por dia. */}
+                    <ul
+                      className="habit-progress"
+                      aria-label={`Últimos dias de ${habit.name}`}
+                    >
                       {habit.lastDays.map((day) => (
-                        <div
+                        <li
                           key={day.date}
-                          title={day.date}
                           className={`habit-dot ${day.completed ? 'completed' : ''}`}
-                        />
+                        >
+                          <span className="sr-only">
+                            {day.date}: {day.completed ? 'feito' : 'não feito'}
+                          </span>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </li>
                 ))}
               </ul>
@@ -184,8 +187,7 @@ function MainContent() {
             </ul>
           </div>
         )}
-      </div>
-    </main>
+    </div>
   )
 }
 
