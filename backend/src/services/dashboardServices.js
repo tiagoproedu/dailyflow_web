@@ -90,6 +90,8 @@ const getSummary = async (userId) => {
             id: habit.id,
             name: habit.name,
             category: habit.category,
+            cue: habit.cue,
+            cueTime: habit.cueTime,
             currentStreak: habit.currentStreak,
             completedToday: completedDates.includes(
                 new Date(startOfDay).toISOString().slice(0, 10)

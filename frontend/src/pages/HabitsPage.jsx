@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../components/ui/Modal';
 import apiClient from '../services/api';
+import { buildIntention } from '../utils/intention';
 
 // Ícones
 const PlusIcon = () => (
@@ -25,6 +26,9 @@ function HabitsPage() {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
+    cue: '',
+    cueTime: '',
+    intrinsic: false,
   });
 
   // Busca os hábitos ao carregar a página
@@ -56,13 +60,19 @@ function HabitsPage() {
 
   const openAddHabitModal = () => {
     setEditingHabit(null);
-    setFormData({ name: '', category: '' });
+    setFormData({ name: '', category: '', cue: '', cueTime: '', intrinsic: false });
     setIsModalOpen(true);
   };
 
   const openEditHabitModal = (habit) => {
     setEditingHabit(habit);
-    setFormData({ name: habit.name, category: habit.category || '' });
+    setFormData({
+      name: habit.name,
+      category: habit.category || '',
+      cue: habit.cue || '',
+      cueTime: habit.cueTime || '',
+      intrinsic: habit.intrinsic || false,
+    });
     setIsModalOpen(true);
     setOpenMenuId(null);
   };
@@ -73,9 +83,19 @@ function HabitsPage() {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({ ...prevState, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
+
+  // Prévia ao vivo da frase enquanto o utilizador escreve o gatilho
+  const intentionPreview = buildIntention({
+    name: formData.name || '...',
+    cue: formData.cue,
+    cueTime: formData.cueTime,
+  });
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -156,7 +176,16 @@ function HabitsPage() {
                     onChange={() => handleToggleHabit(habit.id)}
                     className="task-checkbox"
                   />
-                  <span className="habit-name task-text">{habit.name}</span> {/* Reutilizando task-text */}
+                  <div>
+                    <span className="habit-name task-text">{habit.name}</span> {/* Reutilizando task-text */}
+                    {buildIntention(habit) ? (
+                      <p className="habit-intention">{buildIntention(habit)}</p>
+                    ) : (
+                      <p className="habit-intention habit-intention-missing">
+                        Sem gatilho definido — edite e responda &quot;quando?&quot;
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="habit-item-details task-item-details"> {/* Reutilizando task-item-details */}
                   <span className="habit-category">{habit.category}</span>
@@ -199,7 +228,7 @@ function HabitsPage() {
                     style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
                 />
             </div>
-            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
                 <label htmlFor="category" style={{ display: 'block', marginBottom: '0.5rem' }}>Categoria</label>
                 <input
                     type="text" id="category" name="category"
@@ -208,6 +237,62 @@ function HabitsPage() {
                     style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
                 />
             </div>
+
+            <div className="intention-block">
+                <h3 className="intention-title">Quando você vai fazer isso?</h3>
+                <p className="intention-help">
+                    Ligar o hábito a um gatilho concreto que já existe no seu dia é o que mais
+                    aumenta a chance de ele pegar — mais do que força de vontade.
+                </p>
+
+                <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label htmlFor="cue" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                        Quando eu... <span style={{ color: '#6B7280', fontWeight: 'normal' }}>(ex: terminar o café da manhã)</span>
+                    </label>
+                    <input
+                        type="text" id="cue" name="cue"
+                        value={formData.cue}
+                        onChange={handleInputChange}
+                        placeholder="terminar o café da manhã"
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
+                    />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label htmlFor="cueTime" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                        Horário aproximado <span style={{ color: '#6B7280', fontWeight: 'normal' }}>(opcional)</span>
+                    </label>
+                    <input
+                        type="time" id="cueTime" name="cueTime"
+                        value={formData.cueTime}
+                        onChange={handleInputChange}
+                        style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
+                    />
+                </div>
+
+                {intentionPreview && (
+                    <p className="intention-preview">{intentionPreview}</p>
+                )}
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                <label htmlFor="intrinsic" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', cursor: 'pointer' }}>
+                    <input
+                        type="checkbox" id="intrinsic" name="intrinsic"
+                        checked={formData.intrinsic}
+                        onChange={handleInputChange}
+                        style={{ marginTop: '0.25rem' }}
+                    />
+                    <span>
+                        Eu já faço isso por gosto
+                        <span style={{ display: 'block', color: '#6B7280', fontSize: '0.8125rem' }}>
+                            O app não vai dar pontos por este hábito. Premiar o que você já gosta
+                            de fazer costuma diminuir o prazer de fazer.
+                        </span>
+                    </span>
+                </label>
+            </div>
+
             <div className="form-actions" style={{ textAlign: 'right' }}>
                 <button type="submit" className="btn btn-primary">
                     {editingHabit ? 'Salvar Alterações' : 'Salvar Hábito'}

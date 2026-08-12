@@ -1,6 +1,7 @@
 // src/components/layout/MainContent.jsx
 import { useEffect, useState } from 'react';
 import apiClient from '../../services/api';
+import { buildIntention } from '../../utils/intention';
 
 function MainContent() {
   const [summary, setSummary] = useState(null);
@@ -134,15 +135,21 @@ function MainContent() {
               <ul className="list">
                 {habitsToday.map((habit) => (
                   <li key={habit.id} className="list-item">
-                    <span
+                    <div
                       onClick={() => handleToggleHabit(habit.id)}
-                      style={{
-                        cursor: 'pointer',
-                        textDecoration: habit.completedToday ? 'line-through' : 'none',
-                      }}
+                      style={{ cursor: 'pointer' }}
                     >
-                      {habit.name}
-                    </span>
+                      <span
+                        style={{
+                          textDecoration: habit.completedToday ? 'line-through' : 'none',
+                        }}
+                      >
+                        {habit.name}
+                      </span>
+                      {buildIntention(habit) && (
+                        <p className="habit-intention">{buildIntention(habit)}</p>
+                      )}
+                    </div>
                     <div className="habit-progress">
                       {habit.lastDays.map((day) => (
                         <div

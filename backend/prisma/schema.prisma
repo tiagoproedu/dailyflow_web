@@ -73,7 +73,13 @@ model Habit {
   name            String
   category        String?
   createdAt       DateTime @default(now())
-  
+
+  // Intenção de implementação: "Quando eu <cue>, então eu vou <name>."
+  // É a intervenção com melhor suporte científico para formação de hábitos.
+  cue             String?
+  cueTime         String?  // horário opcional, formato "HH:MM"
+  intrinsic       Boolean  @default(false) // "faço por gosto" -> não gamificar (sobrejustificação)
+
   currentStreak   Int      @default(0)
   longestStreak   Int      @default(0)
   
