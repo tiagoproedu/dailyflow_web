@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import apiClient from '../services/api';
 
 function RegisterPage() {
 
@@ -28,17 +29,7 @@ function RegisterPage() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if(!response.ok) {
-        throw new Error(data.error || 'Falha ao registrar');
-      }
+      await apiClient('/auth/register', 'POST', formData);
 
       // Se o registro for bem-sucedido, redireciona para a página de login
       navigate('/login');

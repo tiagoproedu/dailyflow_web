@@ -31,7 +31,14 @@ const apiClient = async (endpoint, method = 'GET', body = null) => {
   }
 
   // 4. Executa a requisição fetch
-  const response = await fetch(`${API_URL}${endpoint}`, config);
+  // O fetch só rejeita em falha de rede. "Failed to fetch" não diz nada a quem está
+  // usando o app, então traduzimos para algo acionável.
+  let response;
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, config);
+  } catch (networkError) {
+    throw new Error('Não foi possível falar com o servidor. Verifique a sua ligação.');
+  }
 
   if (response.status === 204) {
     return null;

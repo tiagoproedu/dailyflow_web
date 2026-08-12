@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../services/api';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -28,19 +29,7 @@ function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Falha no login.');
-      }
+      const data = await apiClient('/auth/login', 'POST', formData);
 
       // Sucesso no login
       console.log('Login bem-sucedido:', data);
