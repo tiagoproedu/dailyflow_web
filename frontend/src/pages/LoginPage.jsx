@@ -1,5 +1,5 @@
 // frontend/src/pages/LoginPage.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/api';
@@ -16,6 +16,17 @@ function LoginPage() {
 
   // Estado para as mensagens de erro
   const [ error, setError ] = useState(null);
+
+  // Aviso deixado pelo apiClient quando ele encerra uma sessão vencida. Sem isto,
+  // a pessoa era jogada de volta no login sem entender por quê.
+  const [ aviso, setAviso ] = useState(null);
+  useEffect(() => {
+    const mensagem = sessionStorage.getItem('mensagemDeLogin');
+    if (mensagem) {
+      setAviso(mensagem);
+      sessionStorage.removeItem('mensagemDeLogin');
+    }
+  }, []);
 
   // Função para lidar com a digitação de campos
   const handleInputChange = (e) => {
@@ -48,6 +59,10 @@ function LoginPage() {
       <div className="card">
         <h1 className="page-title" style={{ textAlign: 'center' }}>Login</h1>
         
+        {aviso && !error && (
+          <p role="status" className="form-aviso">{aviso}</p>
+        )}
+
         {error && <p role="alert" style={{ color: '#B91C1C', textAlign: 'center', background: '#FEE2E2', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>{error}</p>}
 
         <form onSubmit={handleFormSubmit}>

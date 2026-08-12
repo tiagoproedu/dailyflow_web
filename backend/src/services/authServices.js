@@ -45,11 +45,14 @@ const loginUser = async (loginData) => {
     throw new Error('Credenciais inválidas');
   }
 
-  // Se a senha for válida, gera um token JWT
+  // Se a senha for válida, gera um token JWT.
+  // 2h era curto demais para um app de hábitos: quem abre uma vez por dia
+  // encontrava a sessão sempre vencida. Configurável pelo .env para o dia em que
+  // o app deixar de ser só de uso pessoal.
   const token = jwt.sign(
     { id: user.id, email: user.email },
     process.env.CHAVE_SECRETA,
-    { expiresIn: '2h' }
+    { expiresIn: process.env.JWT_EXPIRACAO || '30d' }
   );
 
   // Remove a senha do objeto antes de retorná-lo

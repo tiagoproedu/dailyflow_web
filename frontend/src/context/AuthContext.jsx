@@ -10,13 +10,13 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
   const [isLoading, setIsLoading] = useState(true); // Para sabermos se a autenticação inicial já foi checada
 
-  // Efeito que roda quando o app carrega para "lembrar" do usuário
+  // Efeito que roda quando o app carrega para "lembrar" do usuário.
+  // Guardamos os dados no login em vez de inventar um utilizador falso; se o token
+  // já não valer, a primeira chamada à API devolve 401 e o apiClient nos expulsa.
   useEffect(() => {
     if (token) {
-      // Futuramente, aqui faremos uma chamada à API para validar o token e buscar dados do usuário.
-      // Por agora, vamos simular que temos os dados do usuário.
-      // Em um caso real: const userData = await api.get('/auth/me', token); setUser(userData);
-      setUser({ name: "Usuário" }); // Simulação
+      const guardado = localStorage.getItem('authUser');
+      setUser(guardado ? JSON.parse(guardado) : { name: 'Você' });
     }
     setIsLoading(false);
   }, [token]);
@@ -24,6 +24,7 @@ export function AuthProvider({ children }) {
   // Função de Login que será usada pela LoginPage
   const login = (userData, authToken) => {
     localStorage.setItem('authToken', authToken);
+    localStorage.setItem('authUser', JSON.stringify(userData));
     setToken(authToken);
     setUser(userData);
   };
@@ -31,6 +32,7 @@ export function AuthProvider({ children }) {
   // Função de Logout
   const logout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
     setToken(null);
     setUser(null);
   };

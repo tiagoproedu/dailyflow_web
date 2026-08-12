@@ -1156,6 +1156,17 @@
   font-size: 0.875rem;
 }
 
+/* Aviso neutro (sessão vencida, por exemplo). Não é erro de quem está usando. */
+.form-aviso {
+  background-color: var(--primary-blue-light);
+  border-left: 3px solid var(--primary-blue-medium);
+  color: var(--primary-blue-darker);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
 /* Marcar o hábito no dashboard: um botão que ocupa a linha toda de texto. */
 .habit-toggle-button {
   display: block;
