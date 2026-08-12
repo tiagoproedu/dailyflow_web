@@ -98,6 +98,12 @@ iniciada hoje.
 
 Node fica no nvm (`~/.nvm/versions/node/v24.15.0/bin`), não está no PATH padrão.
 
+O banco fica no servidor caseiro **`fibbo-server`** (`ssh footy`), num container Docker
+próprio (`~/dailyflow-db/compose.yaml`, container `dailyflow_postgres`, volume
+`dailyflow-db_dailyflow_pgdata`). Ele escuta **apenas no IP da Tailscale**
+(`100.96.187.34:5432`) — não está exposto na LAN nem na internet. O Postgres do Immich que
+roda no mesmo servidor é outro container e não deve ser tocado.
+
 ```bash
 # backend  (precisa de um PostgreSQL acessível em DATABASE_URL)
 cd backend && npx prisma migrate deploy && npm start   # porta 3001
