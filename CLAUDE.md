@@ -78,6 +78,18 @@ qualquer tela nova:
   bordas (4,8:1). Abaixo disso, só traço decorativo (`--neutral-gray-line`).
 - Mensagens que aparecem sozinhas levam `role="status"`; erros, `role="alert"`.
 
+## Nada de tela falsa
+
+O app começou com páginas de exemplo cheias de dados inventados. Foram todas
+removidas — a última foi o Perfil, que exibia um plano "Premium" e uma data de
+cobrança que não existiam. **Regra:** nenhum número, botão ou seção entra na tela
+sem estar ligado ao banco. Se a funcionalidade ainda não existe, a seção não
+aparece; melhor faltar do que mentir.
+
+Fora do escopo do v1, de propósito: gerador de rotinas com IA, gamificação
+(moedas/XP — `virtualCoins` está no schema mas ninguém escreve nele) e lembretes
+por push.
+
 > O `npm run lint` já falha na origem com ~15 erros de `react/prop-types` — o projeto
 > nunca declarou PropTypes. Ao mexer, compare a contagem antes e depois em vez de
 > esperar zero.
@@ -86,14 +98,16 @@ qualquer tela nova:
 
 | Funcionalidade | Backend | Frontend |
 |---|---|---|
-| Auth (registro, login, rotas protegidas) | ✅ | ✅ |
+| Auth (registro, login, sessão de 30d, rotas protegidas) | ✅ | ✅ |
 | Tarefas (CRUD) | ✅ | ✅ |
 | Hábitos + conclusões diárias | ✅ | ✅ |
 | Rotinas (CRUD, tarefas-modelo, "iniciar hoje") | ✅ | ✅ |
 | Dashboard agregado (`GET /api/dashboard`) | ✅ | ✅ |
+| Perfil real + sair da conta | ✅ | ✅ |
 | Gamificação (XP, moedas, loja) | ⬜ | ⬜ |
 | IA geradora de rotinas | ⬜ | ⬜ |
-| Deploy / PWA no celular | ⬜ | ⬜ |
+| Deploy / PWA no celular | ✅ | ✅ |
+| Streaks e calendário de hábitos | ⬜ | ⬜ |
 
 ## Endpoints
 
@@ -111,6 +125,7 @@ PATCH  /routines/:id             DELETE /routines/:id
 POST   /routines/:id/tasks       DELETE /routines/:id/tasks/:taskId
 POST   /routines/:id/start       # copia as tarefas-modelo para tarefas reais de hoje
 GET    /dashboard                # números + listas do dia
+GET    /profile                  # dados do utilizador + estatísticas reais
 ```
 
 ### Modelo de Rotinas

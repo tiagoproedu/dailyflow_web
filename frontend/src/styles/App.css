@@ -121,23 +121,6 @@
   gap: 1rem; /* Equivalente a space-x-4 */
 }
 
-.notification-button {
-  color: var(--neutral-gray-medium);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.notification-button:hover {
-  color: var(--primary-purple-medium);
-}
-
-.notification-button svg {
-  height: 1.5rem; /* Equivalente a h-6 */
-  width: 1.5rem; /* Equivalente a w-6 */
-}
-
 .user-avatar {
   height: 2rem; /* Equivalente a h-8 */
   width: 2rem; /* Equivalente a w-8 */
@@ -889,13 +872,11 @@
   font-weight: 500; /* */
 }
 
-.plan-badge {
-  background-color: var(--primary-purple-light); /* */
-  color: var(--primary-purple-dark); /* */
-  padding: 0.25rem 0.625rem; /* py-1 px-2.5 */
-  border-radius: var(--radius-md); /* */
-  font-weight: 500; /* */
-  font-size: 0.75rem; /* text-xs */
+/* Explica o zero em vez de deixar a pessoa achando que quebrou. */
+.profile-vazio {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--neutral-gray-medium);
 }
 
 .profile-account-actions {
@@ -1108,7 +1089,6 @@
 /* Alvos de toque. A recomendação (WCAG 2.5.5 / Android / iOS) é 44x44px; vários
    botões daqui tinham menos de 25px, o que erra o alvo com o dedo. */
 .task-action-button,
-.notification-button,
 .menu-button {
   min-width: 44px;
   min-height: 44px;
