@@ -28,3 +28,5 @@ node_modules
 backend/.env
 
 /generated/prisma
+
+.env.backup-windows
