@@ -134,7 +134,18 @@ O `.env` de produção mora **apenas no servidor** (`~/dailyflow-app/.env`, chmo
 é enviado pelo script. Lá o `DATABASE_URL` aponta para `db:5432`, pelo nome do serviço na
 rede `dailyflow-db_default`.
 
-O TLS é terminado pelo `tailscale serve`, por isso o Caddy fala HTTP puro na 8080.
+O TLS é terminado pelo `tailscale serve`, por isso o Caddy fala HTTP puro na 8080:
+
+```bash
+sudo tailscale serve --bg http://127.0.0.1:8080   # publica em https://fibbo-server.tail1b8792.ts.net
+```
+
+> **Nunca retentar emissão de certificado em loop.** A Let's Encrypt bloqueia após
+> **5 autorizações falhas por hora** no mesmo domínio, e cada tentativa deixa mais um TXT
+> obsoleto em `_acme-challenge.fibbo-server.tail1b8792.ts.net`. Retentar rápido transforma
+> uma falha temporária em uma hora parado e ainda piora a causa. Se falhar: **uma
+> tentativa, depois espere horas.** Diagnóstico sem gastar cota:
+> `tailscale debug daemon-logs` e `nslookup -type=TXT _acme-challenge.<host> 199.247.155.53`.
 
 ### PWA
 
