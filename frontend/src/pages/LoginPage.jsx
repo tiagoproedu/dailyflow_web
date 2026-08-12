@@ -44,7 +44,7 @@ function LoginPage() {
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: '450px', margin: 'auto', paddingTop: '2rem' }}>
+    <main className="page-container" style={{ maxWidth: '450px', margin: 'auto', paddingTop: '2rem' }}>
       <div className="card">
         <h1 className="page-title" style={{ textAlign: 'center' }}>Login</h1>
         
@@ -84,7 +84,7 @@ function LoginPage() {
           Não tem uma conta? <Link to="/register" style={{ color: 'var(--primary-blue-medium)' }}>Crie uma agora</Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }
 

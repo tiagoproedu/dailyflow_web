@@ -41,7 +41,7 @@ function RegisterPage() {
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: '450px', margin: 'auto', paddingTop: '2rem' }}>
+    <main className="page-container" style={{ maxWidth: '450px', margin: 'auto', paddingTop: '2rem' }}>
       <div className="card">
         <h1 className="page-title" style={{ textAlign: 'center' }}>Criar Conta</h1>
         
@@ -95,7 +95,7 @@ function RegisterPage() {
           Já tem uma conta? <Link to="/login" style={{ color: 'var(--primary-blue-medium)' }}>Faça o login</Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }
 

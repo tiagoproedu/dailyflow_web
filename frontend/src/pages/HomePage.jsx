@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 function HomePage() {
   return (
-    <div className="page-container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
+    <main className="page-container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
       <h1 className="header-title" style={{ fontSize: '3rem', marginBottom: '1rem' }}>
         Bem-vindo ao DailyFlow
       </h1>
@@ -20,7 +20,7 @@ function HomePage() {
           Registrar
         </Link>
       </div>
-    </div>
+    </main>
   );
 }
 
