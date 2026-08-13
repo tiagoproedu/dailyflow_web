@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
  * @returns {Promise<object>} Dados pessoais e estatísticas.
  */
 const getProfile = async (userId) => {
-    const [user, habitsCompleted, activeHabits, tasksCompleted, activeRoutines] = await Promise.all([
+    const [user, habitsCompleted, activeHabits, tasksCompleted, activeRoutines, habitsWithReminder] = await Promise.all([
         prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -34,6 +34,10 @@ const getProfile = async (userId) => {
         prisma.routine.count({
             where: { userId, active: true },
         }),
+        // Sem horário de gatilho não há lembrete possível — a tela avisa quando é zero.
+        prisma.habit.count({
+            where: { userId, cueTime: { not: null } },
+        }),
     ]);
 
     if (!user) {
@@ -51,6 +55,7 @@ const getProfile = async (userId) => {
             activeHabits,
             tasksCompleted,
             activeRoutines,
+            habitsWithReminder,
         },
     };
 };

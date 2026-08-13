@@ -6,6 +6,7 @@ const habitRoutes = require('./routes/habitRoutes');
 const routineRoutes = require('./routes/routineRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const pushRoutes = require('./routes/pushRoutes');
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use('/api/habits', habitRoutes);
 app.use('/api/routines', routineRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/push', pushRoutes);
 
 module.exports = app;

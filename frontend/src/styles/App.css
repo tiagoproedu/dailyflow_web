@@ -1147,6 +1147,24 @@
   font-size: 0.875rem;
 }
 
+/* Confirmação de algo que deu certo. Verde escuro: 5,9:1 sobre o fundo claro. */
+.form-sucesso {
+  background-color: #ECFDF5;
+  border-left: 3px solid #047857;
+  color: #065F46;
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Explica o que os lembretes fazem antes de a pessoa decidir ligá-los. */
+.lembretes-explicacao {
+  color: var(--neutral-gray-dark);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
 /* Marcar o hábito no dashboard: um botão que ocupa a linha toda de texto. */
 .habit-toggle-button {
   display: block;

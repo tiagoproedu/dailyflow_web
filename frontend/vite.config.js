@@ -8,6 +8,12 @@ export default defineConfig({
     react( ),
     VitePWA({
       registerType: 'autoUpdate',
+      // O service worker gerado automaticamente não aceita handler de `push`. Com
+      // `injectManifest` o ficheiro é o nosso (`src/sw.js`) e o plugin só injeta nele a
+      // lista de ficheiros a pré-carregar.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'DailyFlow — hábitos, rotinas e produtividade',
@@ -27,17 +33,9 @@ export default defineConfig({
           { src: 'pwa-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: {
+      // Regras de cache e tratamento do push vivem em `src/sw.js`.
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,png,woff2}'],
-        // O app funciona offline, mas os dados nunca vêm de cache: hábitos e tarefas
-        // marcados precisam refletir o estado real do servidor.
-        navigateFallbackDenylist: [/^\/api/],
-        runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api'),
-            handler: 'NetworkOnly',
-          },
-        ],
       },
     }),
   ],

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/api';
+import SecaoLembretes from '../components/profile/SecaoLembretes';
 
 // Mostra a data como "Agosto de 2026" — o dia exato não interessa aqui.
 const formatarMes = (iso) => {
@@ -105,6 +106,8 @@ function ProfilePage() {
             </p>
           )}
         </div>
+
+        <SecaoLembretes habitosComHorario={stats.habitsWithReminder} />
 
         <div className="profile-section card">
           <div className="profile-section-header">

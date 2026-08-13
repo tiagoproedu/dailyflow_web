@@ -78,6 +78,45 @@ qualquer tela nova:
   bordas (4,8:1). Abaixo disso, só traço decorativo (`--neutral-gray-line`).
 - Mensagens que aparecem sozinhas levam `role="status"`; erros, `role="alert"`.
 
+## Fuso horário
+
+O app roda em **America/Fortaleza**, definido em dois lugares: `TZ` no `compose.yaml` e um
+padrão no topo do `server.js` (antes de qualquer `new Date()`). **Não remover nenhum dos
+dois.** Sem eles o container roda em UTC e tudo o que depende de "hoje" sai errado: um
+hábito marcado às 23:00 é gravado no dia seguinte e o dashboard chama a noite de "Manhã".
+
+A imagem `node:22-alpine` não traz base de fusos, mas o Node carrega a própria (ICU), por
+isso `Date` e `Intl` acertam mesmo com `/usr/share/zoneinfo` ausente — só o `date` do shell
+mostra UTC. Toda a lógica de data vive no Node, então isso é inofensivo.
+
+## Lembretes (push)
+
+O celular avisa na hora do gatilho de cada hábito — é o `cueTime`, que já existia no schema
+e não era usado para nada. Peças:
+
+| Peça | Onde |
+|---|---|
+| Envio (VAPID, limpeza de inscrição morta) | `backend/src/services/pushServices.js` |
+| Agendador de minuto em minuto | `backend/src/jobs/lembretesJob.js` |
+| Service worker (`push`, `notificationclick`) | `frontend/src/sw.js` |
+| Ligar/desligar no aparelho | `frontend/src/components/profile/SecaoLembretes.jsx` |
+
+Regras que valem ao mexer nisto:
+
+- **O cron é `* * * * *` de propósito.** Quem decide se é a hora é o `horaLocal()`, com a
+  hora local do Node. Assim o fuso do cron deixa de ser um ponto de falha.
+- **Hábito já marcado hoje não gera lembrete.** Avisar sobre o que a pessoa já fez é a
+  forma mais rápida de ela aprender a ignorar as notificações.
+- Dois hábitos no mesmo horário viram **uma** notificação, não duas vibrações.
+- **A inscrição é por aparelho, não por conta.** O estado tem de ser lido do navegador
+  (`lerEstado()`), nunca assumido a partir do servidor.
+- Inscrição que o serviço de push rejeita com 404/410 é apagada sozinha.
+- As chaves VAPID vivem só nos `.env` (local e servidor). A pública é servida por
+  `GET /push/chave-publica` para não acoplar chave nenhuma ao build do frontend.
+- O service worker usa `strategies: 'injectManifest'` — o gerado automaticamente não
+  aceita handler de `push`. Ao mexer no `vite.config.js`, não voltar para `generateSW`.
+- **Push exige HTTPS.** Pelo endereço HTTP da Tailscale nada disto existe.
+
 ## Nada de tela falsa
 
 O app começou com páginas de exemplo cheias de dados inventados. Foram todas
@@ -86,9 +125,8 @@ cobrança que não existiam. **Regra:** nenhum número, botão ou seção entra 
 sem estar ligado ao banco. Se a funcionalidade ainda não existe, a seção não
 aparece; melhor faltar do que mentir.
 
-Fora do escopo do v1, de propósito: gerador de rotinas com IA, gamificação
-(moedas/XP — `virtualCoins` está no schema mas ninguém escreve nele) e lembretes
-por push.
+Fora do escopo do v1, de propósito: gerador de rotinas com IA e gamificação
+(moedas/XP — `virtualCoins` está no schema mas ninguém escreve nele).
 
 > O `npm run lint` já falha na origem com ~15 erros de `react/prop-types` — o projeto
 > nunca declarou PropTypes. Ao mexer, compare a contagem antes e depois em vez de
@@ -104,6 +142,7 @@ por push.
 | Rotinas (CRUD, tarefas-modelo, "iniciar hoje") | ✅ | ✅ |
 | Dashboard agregado (`GET /api/dashboard`) | ✅ | ✅ |
 | Perfil real + sair da conta | ✅ | ✅ |
+| Lembretes push na hora do gatilho | ✅ | ✅ |
 | Gamificação (XP, moedas, loja) | ⬜ | ⬜ |
 | IA geradora de rotinas | ⬜ | ⬜ |
 | Deploy / PWA no celular | ✅ | ✅ |
@@ -126,6 +165,9 @@ POST   /routines/:id/tasks       DELETE /routines/:id/tasks/:taskId
 POST   /routines/:id/start       # copia as tarefas-modelo para tarefas reais de hoje
 GET    /dashboard                # números + listas do dia
 GET    /profile                  # dados do utilizador + estatísticas reais
+GET    /push/chave-publica       GET  /push/estado
+POST   /push/inscrever           POST /push/cancelar
+POST   /push/testar              # lembrete de teste, para conferir no aparelho
 ```
 
 ### Modelo de Rotinas

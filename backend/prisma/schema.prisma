@@ -28,6 +28,22 @@ model User {
   tasks             Task[]
   habits            Habit[]
   routines          Routine[]
+  pushSubscriptions PushSubscription[]
+}
+
+// Um aparelho autorizado a receber lembretes. O mesmo utilizador pode ter vários
+// (celular e desktop), por isso a chave única é o endpoint, não o utilizador.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Task {
