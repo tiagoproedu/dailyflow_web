@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../layout/Sidebar'; // Importe a Sidebar
 import Header from '../layout/Header';   // Importe o Header
+import BottomNav from '../layout/BottomNav';
 import { useEffect, useState } from 'react';
 
 // Este componente vai renderizar o layout principal do app (Header + Sidebar + Conteúdo)
@@ -44,6 +45,8 @@ const AppLayout = () => {
           <Outlet /> {/* O <Outlet /> é onde a página atual (ex: /dashboard) será renderizada */}
         </main>
       </div>
+      {/* Só aparece no celular; no desktop a barra lateral já faz este papel. */}
+      <BottomNav />
     </div>
   );
 };

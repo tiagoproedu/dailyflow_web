@@ -177,9 +177,13 @@ function HabitsPage() {
     <div className="page-container habits-page">
       <div className="page-header-custom">
         <h1 className="page-title">Meus Hábitos</h1>
-        <button className="btn btn-primary add-habit-button" onClick={openAddHabitModal}>
+        <button
+          className="btn btn-primary add-habit-button"
+          onClick={openAddHabitModal}
+          aria-label="Adicionar hábito"
+        >
           <PlusIcon />
-          Adicionar Hábito
+          <span className="rotulo-botao">Adicionar Hábito</span>
         </button>
       </div>
 
@@ -205,15 +209,22 @@ function HabitsPage() {
                   {/* O <label> nomeia o checkbox para o leitor de tela e transforma
                       o nome do hábito em área de toque. A frase do gatilho fica de
                       fora: é informação, não deve marcar o hábito sem querer. */}
-                  <label className="item-toggle">
-                    <input
-                      type="checkbox"
-                      checked={isCompletedToday(habit)} // Controlado pelo estado
-                      onChange={() => handleToggleHabit(habit.id)}
-                      className="task-checkbox"
-                    />
-                    <span className="habit-name task-text">{habit.name}</span> {/* Reutilizando task-text */}
-                  </label>
+                  <div className="habit-cabecalho">
+                    <label className="item-toggle">
+                      <input
+                        type="checkbox"
+                        checked={isCompletedToday(habit)} // Controlado pelo estado
+                        onChange={() => handleToggleHabit(habit.id)}
+                        className="task-checkbox"
+                      />
+                      <span className="habit-name task-text">{habit.name}</span> {/* Reutilizando task-text */}
+                    </label>
+                    {/* Fica fora do <label> de propósito: tocar na sequência não pode
+                        marcar o hábito sem querer. */}
+                    {resumoDaSequencia(habit.estatisticas) && (
+                      <span className="habit-streak">{resumoDaSequencia(habit.estatisticas)}</span>
+                    )}
+                  </div>
                   {buildIntention(habit) ? (
                     <p className="habit-intention">{buildIntention(habit)}</p>
                   ) : (
@@ -224,10 +235,7 @@ function HabitsPage() {
                   <ProgressoDoHabito estatisticas={habit.estatisticas} />
                 </div>
                 <div className="habit-item-details task-item-details"> {/* Reutilizando task-item-details */}
-                  {resumoDaSequencia(habit.estatisticas) && (
-                    <span className="habit-streak">{resumoDaSequencia(habit.estatisticas)}</span>
-                  )}
-                  <span className="habit-category">{habit.category}</span>
+                  {habit.category && <span className="habit-category">{habit.category}</span>}
                   <div className="task-actions-menu">
                     <button
                       type="button"

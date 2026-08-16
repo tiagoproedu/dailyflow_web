@@ -84,81 +84,56 @@ function MainContent() {
 
         <Celebracao mensagem={celebracao} aoFechar={() => setCelebracao(null)} />
 
-        <div className="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3" style={{ marginBottom: '2rem' }}>
-          <div className="card">
-            <h2 className="card-title">Tarefas Pendentes</h2>
-            <p className="card-metric card-metric-blue">{stats.pendingTasks}</p>
-            <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>
-              {stats.completedToday} concluída(s) hoje
-            </p>
+        {/* Os três números viraram uma faixa. Antes eram três cartões de ~200px
+            cada, e os hábitos — o que a pessoa abriu o app para fazer — só
+            apareciam depois de duas telas de rolagem. */}
+        <div className="faixa-numeros">
+          <div className="numero-do-dia">
+            <span className="numero-do-dia-valor">{stats.pendingTasks}</span>
+            <span className="numero-do-dia-rotulo">
+              {stats.pendingTasks === 1 ? 'tarefa aberta' : 'tarefas abertas'}
+            </span>
           </div>
 
-          <div className="card">
-            <h2 className="card-title">Hábitos de Hoje</h2>
-            <p className="card-metric card-metric-purple">
+          <div className="numero-do-dia roxo">
+            <span className="numero-do-dia-valor">
               {stats.habitsDoneToday}/{stats.activeHabits}
-            </p>
-            {/* A barra é o que cobra: um progresso incompleto à vista incomoda mais
-                que o mesmo número solto. Decorativa — a contagem acima já diz tudo
-                a quem usa leitor de tela. */}
-            {stats.activeHabits > 0 && (
-              <div className="progresso" aria-hidden="true">
-                <div
-                  className="progresso-preenchido"
-                  style={{
-                    width: `${Math.round((stats.habitsDoneToday / stats.activeHabits) * 100)}%`,
-                  }}
-                />
-              </div>
-            )}
-            <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>
-              {stats.activeHabits === 0
-                ? 'Nenhum hábito criado ainda'
-                : stats.habitsDoneToday === stats.activeHabits
-                  ? 'Tudo feito hoje!'
-                  : `Faltam ${stats.activeHabits - stats.habitsDoneToday}`}
-            </p>
+            </span>
+            <span className="numero-do-dia-rotulo">hábitos hoje</span>
           </div>
 
-          <div className="card">
-            <h2 className="card-title">Rotinas Ativas</h2>
-            <p className="card-metric card-metric-blue">{stats.activeRoutines}</p>
-            <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>
-              {stats.routinesNow > 0
-                ? `${stats.routinesNow} para agora (${summary.timeOfDay})`
-                : `Nenhuma para agora (${summary.timeOfDay})`}
-            </p>
+          <div className="numero-do-dia">
+            <span className="numero-do-dia-valor">{stats.routinesNow}</span>
+            <span className="numero-do-dia-rotulo">rotinas agora</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 grid-cols-lg-2">
-          <div className="card">
-            <h2 className="section-title">Tarefas Recentes</h2>
-            {recentTasks.length === 0 ? (
-              <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>
-                Nenhuma tarefa pendente. Aproveite ou crie a próxima.
-              </p>
-            ) : (
-              <ul className="list">
-                {recentTasks.map((task) => (
-                  <li key={task.id} className="list-item">
-                    <span>{task.text}</span>
-                    <button
-                      className="btn btn-primary btn-xs"
-                      onClick={() => handleCompleteTask(task.id)}
-                    >
-                      Concluir
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="card">
+          {/* Primeiro cartão da página: é a ação do dia, não um resumo dela. */}
+          <div className="card card-secao">
             <h2 className="section-title">Hábitos do Dia</h2>
+            {/* A barra é o que cobra: um progresso incompleto à vista incomoda
+                mais que o mesmo número solto. Decorativa — a faixa acima já diz
+                a contagem a quem usa leitor de tela. */}
+            {stats.activeHabits > 0 && (
+              <>
+                <div className="progresso" aria-hidden="true">
+                  <div
+                    className="progresso-preenchido"
+                    style={{
+                      width: `${Math.round((stats.habitsDoneToday / stats.activeHabits) * 100)}%`,
+                    }}
+                  />
+                </div>
+                <p className="texto-apoio">
+                  {stats.habitsDoneToday === stats.activeHabits
+                    ? 'Tudo feito hoje.'
+                    : `Faltam ${stats.activeHabits - stats.habitsDoneToday}.`}
+                </p>
+              </>
+            )}
             {habitsToday.length === 0 ? (
-              <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>
+              <p className="texto-apoio">
                 Nenhum hábito ainda. Comece por um só — o pequeno é o que gruda.
               </p>
             ) : (
@@ -211,10 +186,33 @@ function MainContent() {
               </ul>
             )}
           </div>
+
+          <div className="card card-secao">
+            <h2 className="section-title">Tarefas Recentes</h2>
+            {recentTasks.length === 0 ? (
+              <p className="texto-apoio">
+                Nenhuma tarefa pendente. Aproveite ou crie a próxima.
+              </p>
+            ) : (
+              <ul className="list">
+                {recentTasks.map((task) => (
+                  <li key={task.id} className="list-item">
+                    <span>{task.text}</span>
+                    <button
+                      className="btn btn-primary btn-xs"
+                      onClick={() => handleCompleteTask(task.id)}
+                    >
+                      Concluir
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         {routinesToday.length > 0 && (
-          <div className="card" style={{ marginTop: '1.5rem' }}>
+          <div className="card card-secao">
             <h2 className="section-title">Rotinas</h2>
             <ul className="list">
               {routinesToday.map((routine) => (
@@ -223,7 +221,7 @@ function MainContent() {
                     {routine.name}
                     {routine.isNow && ' — agora'}
                   </span>
-                  <span style={{ color: '#6B7280', fontSize: '0.875rem' }}>
+                  <span className="texto-apoio">
                     {routine.timeOfDay} · {routine.taskCount} tarefa(s)
                   </span>
                 </li>

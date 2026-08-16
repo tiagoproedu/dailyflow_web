@@ -1331,3 +1331,429 @@
   font-size: 0.8125rem;
   color: var(--neutral-gray-dark);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REVISÃO VISUAL — celular primeiro
+   ══════════════════════════════════════════════════════════════════════════
+   Três problemas concretos motivaram este bloco:
+   1. a navegação vivia atrás de um botão no canto superior esquerdo, o ponto
+      mais difícil de alcançar com o polegar de quem usa o app com uma mão;
+   2. cada tarefa ocupava ~190px de altura para uma linha de texto, porque no
+      celular a prioridade e o menu desciam para uma segunda linha;
+   3. o dashboard abria com três cartões enormes de um número cada, empurrando
+      os hábitos — o que a pessoa veio fazer — para fora da tela.
+   A identidade (azul e roxo, do logo) foi mantida; o que mudou foi densidade,
+   hierarquia e alcance do dedo. */
+
+:root {
+  /* Fundo levemente mais neutro que o azul de antes: acalma a tela e faz o
+     branco dos cartões destacar-se em vez de competir. */
+  --fundo: #F4F6FB;
+  --superficie: #FFFFFF;
+  --borda-suave: #E8EBF3;
+
+  --sombra-1: 0 1px 2px rgba(17, 24, 39, 0.04), 0 1px 3px rgba(17, 24, 39, 0.06);
+  --sombra-2: 0 4px 12px rgba(17, 24, 39, 0.08);
+
+  --radius-xl: 0.875rem;
+
+  /* Altura da barra inferior, usada por tudo que precisa ficar acima dela. */
+  --altura-nav: 3.75rem;
+}
+
+.main-content {
+  background-color: var(--fundo);
+}
+
+/* ── Cabeçalho ───────────────────────────────────────────────────────────── */
+
+/* Fica colado ao topo: a identidade e o avatar continuam à mão sem custar
+   altura de rolagem. Mais fino que antes — eram 135px só de moldura. */
+.header {
+  position: sticky;
+  top: 0;
+  padding: 0.625rem 1rem;
+  padding-top: calc(0.625rem + env(safe-area-inset-top));
+  border-bottom: 1px solid var(--borda-suave);
+  box-shadow: none;
+}
+
+.header-title {
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+.user-avatar {
+  height: 2.25rem;
+  width: 2.25rem;
+}
+
+/* ── Barra inferior (celular) ────────────────────────────────────────────── */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  background-color: var(--superficie);
+  border-top: 1px solid var(--borda-suave);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bottom-nav li {
+  flex: 1;
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  height: var(--altura-nav);
+  text-decoration: none;
+  color: var(--neutral-gray-medium);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.bottom-nav a svg {
+  height: 1.375rem;
+  width: 1.375rem;
+}
+
+/* O destino atual não se distingue só pela cor: o ícone engrossa e ganha uma
+   marca acima dele. Cor sozinha não serve como única pista. */
+.bottom-nav a.active {
+  color: var(--primary-blue-dark);
+  font-weight: 600;
+}
+
+.bottom-nav a.active svg {
+  stroke-width: 2.2;
+}
+
+.bottom-nav a.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 1.75rem;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background-color: var(--primary-blue-dark);
+}
+
+.bottom-nav li {
+  position: relative;
+}
+
+/* O conteúdo não pode terminar por baixo da barra. */
+.main-content {
+  padding-bottom: calc(var(--altura-nav) + env(safe-area-inset-bottom));
+}
+
+/* A faixa de reconhecimento sobe para não ficar escondida atrás da navegação. */
+.celebracao-area {
+  bottom: calc(var(--altura-nav) + env(safe-area-inset-bottom) + 0.75rem);
+}
+
+@media (min-width: 768px) {
+  /* No desktop quem navega é a barra lateral. */
+  .bottom-nav {
+    display: none;
+  }
+
+  .main-content {
+    padding-bottom: 0;
+  }
+
+  .celebracao-area {
+    bottom: 1.25rem;
+  }
+}
+
+/* No celular a gaveta deixou de existir: sai do DOM visual e do caminho do
+   teclado, em vez de ficar escondida fora da tela mas ainda focável. */
+@media (max-width: 767px) {
+  .sidebar,
+  .sidebar-backdrop,
+  .header .menu-button {
+    display: none;
+  }
+}
+
+/* ── Cabeçalho de página ─────────────────────────────────────────────────── */
+
+/* Título e ação na mesma linha, em todas as páginas. Antes cada uma resolvia
+   isto à sua maneira e o botão de "adicionar" comia uma faixa inteira. */
+.tasks-header,
+.page-header-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: nowrap;
+}
+
+.tasks-header .page-title,
+.page-header-custom .page-title {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.page-title {
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.page-container {
+  padding: 1rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
+}
+
+/* O botão de adicionar não precisa de gritar: a página tem um só. */
+.add-task-button,
+.add-habit-button,
+.add-routine-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 420px) {
+  /* Em telas bem estreitas sobra o "+", que é universal. O `aria-label` já
+     nomeia o botão para quem usa leitor de tela. */
+  .add-task-button .rotulo-botao,
+  .add-habit-button .rotulo-botao,
+  .add-routine-button .rotulo-botao {
+    display: none;
+  }
+
+  .add-task-button,
+  .add-habit-button,
+  .add-routine-button {
+    padding: 0.5rem;
+  }
+}
+
+/* ── Cartões ─────────────────────────────────────────────────────────────── */
+
+.card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--borda-suave);
+  box-shadow: var(--sombra-1);
+}
+
+.task-list-container,
+.habit-list-container,
+.routine-list-container {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+/* ── Itens de lista: uma linha, não três ─────────────────────────────────── */
+
+.task-item,
+.habit-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--borda-suave);
+}
+
+.task-text {
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 640px) {
+  /* Tarefa é uma linha de texto: prioridade e menu voltam para junto dela.
+     Cinco tarefas passam a caber numa tela em vez de tela e meia.
+
+     O `:not(.habit-item)` não é enfeite: um hábito na lista carrega as duas
+     classes (`habit-item task-item`) para reaproveitar o estilo. Sem o filtro,
+     estas regras esmagavam o hábito até o texto quebrar letra a letra. */
+  .task-item:not(.habit-item) {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .task-item-content:not(.habit-item-content) {
+    width: auto;
+    margin-right: 0;
+    min-width: 0;
+  }
+
+  .task-item-details:not(.habit-item-details) {
+    width: auto;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+  }
+
+  /* Hábito é outro bicho: carrega a frase do gatilho e a barra de progresso,
+     blocos de várias linhas. Espremê-lo numa linha só parte as palavras letra a
+     letra. Continua empilhado — o que sai é a moldura, não a estrutura. */
+  .habit-item {
+    gap: 0.5rem;
+  }
+
+  .habit-item-details {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+  }
+
+  /* O menu de ações vai para a ponta direita da própria linha. */
+  .habit-item-details .task-actions-menu {
+    margin-left: auto;
+  }
+}
+
+/* A sequência sobe para junto do nome: é a informação que a pessoa procura
+   primeiro, e assim a linha de baixo fica só com a categoria e o menu. */
+.habit-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Faixa de números do dashboard ───────────────────────────────────────── */
+
+/* Eram três cartões de ~200px cada, um número em cada. Viraram uma faixa: a
+   mesma informação em um sexto da altura, e os hábitos do dia sobem para
+   dentro da primeira tela. */
+.faixa-numeros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.numero-do-dia {
+  background-color: var(--superficie);
+  border: 1px solid var(--borda-suave);
+  border-radius: var(--radius-xl);
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  box-shadow: var(--sombra-1);
+}
+
+.numero-do-dia-valor {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--primary-blue-dark);
+}
+
+.numero-do-dia.roxo .numero-do-dia-valor {
+  color: var(--primary-purple-darker);
+}
+
+.numero-do-dia-rotulo {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--neutral-gray-dark);
+}
+
+/* Texto de apoio, no lugar dos `style={{ color: '#6B7280' }}` espalhados pelo
+   JSX — cor de tema não pertence ao componente. */
+.texto-apoio {
+  color: var(--neutral-gray-dark);
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+.card-secao + .card-secao {
+  margin-top: 1rem;
+}
+
+/* ── Ajustes finais da revisão ───────────────────────────────────────────── */
+
+/* A lista ocupa a borda do cartão: cartão com padding + item com padding roubava
+   32px de largura útil numa tela de 360px, e é a largura que faz o texto caber. */
+.task-list-container,
+.habit-list-container {
+  padding: 0;
+}
+
+/* O estado vazio precisa do respiro que o cartão deixou de dar. */
+.task-list-container > p,
+.habit-list-container > p {
+  padding: 1.5rem;
+}
+
+/* O texto encolhe e o botão fica inteiro à direita. Antes o "Concluir" caía para
+   uma linha só dele, dobrando a altura de cada tarefa do resumo. */
+.list-item {
+  gap: 0.75rem;
+}
+
+.list-item > span:first-child {
+  min-width: 0;
+  flex: 1;
+}
+
+.list-item .btn {
+  flex-shrink: 0;
+}
+
+/* No dashboard o hábito ocupa a linha toda e os pontinhos descem — ali o nome e a
+   frase do gatilho valem mais que a economia de altura. */
+.habit-toggle-button {
+  min-width: 0;
+}
+
+/* Em tela larga três caixas de um número cada esticavam-se por 1500px e a faixa
+   ficava vazia. Ela para de crescer e alinha-se à esquerda, com o resto. */
+@media (min-width: 768px) {
+  .faixa-numeros {
+    max-width: 34rem;
+  }
+}
+
+/* Quando sobra só o "+", o botão continua a ser um alvo de 44px. */
+.add-task-button,
+.add-habit-button,
+.add-routine-button {
+  min-width: 44px;
+  justify-content: center;
+}
+
+/* Os 44px não podem depender de `@media (pointer: coarse)`: nem todo telemóvel
+   anuncia ponteiro grosseiro, e um alvo pequeno demais é falha em qualquer caso.
+   Estes dois ficavam em 38px. */
+.add-task-button,
+.add-habit-button,
+.add-routine-button {
+  min-height: 44px;
+}
+
+.task-actions-dropdown button {
+  min-height: 44px;
+}

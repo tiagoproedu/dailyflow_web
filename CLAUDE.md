@@ -56,6 +56,33 @@ web/
   `page-container`). Estilos ficam em `src/styles/App.css`.
 - **Commits:** mensagens em português, prefixos `feat:` / `fix:` / `chore:`.
 
+## Desenho da interface
+
+O app é feito para o celular, com uma mão. O que decorre disso:
+
+| Peça | Onde |
+|---|---|
+| Destinos e ícones (fonte única) | `frontend/src/components/layout/navegacao.jsx` |
+| Barra inferior (celular) | `frontend/src/components/layout/BottomNav.jsx` |
+| Barra lateral (desktop) | `frontend/src/components/layout/Sidebar.jsx` |
+| Tokens, faixa de números, listas | bloco "REVISÃO VISUAL" no fim do `App.css` |
+
+- **A navegação do celular é a barra inferior**, não a gaveta. A gaveta abria por um botão
+  no canto superior esquerdo — o ponto mais difícil de alcançar com o polegar. Abaixo de
+  768px a `.sidebar`, o fundo dela e o botão de menu ficam em `display: none`; acima, a
+  `.bottom-nav` é que desaparece.
+- **Os destinos vivem em `navegacao.jsx`**, não duplicados nas duas barras.
+- **Cuidado com `.task-item` ao mexer em CSS de lista:** um hábito na lista carrega as
+  duas classes (`habit-item task-item`) para reaproveitar estilo. Regras de tarefa no
+  celular precisam de `:not(.habit-item)`, senão esmagam o hábito — o texto chega a quebrar
+  letra a letra. Tarefa é uma linha; hábito é um bloco com gatilho e barra de progresso.
+- **Qualquer coisa fixa no rodapé** (a faixa de reconhecimento) tem de subir acima da
+  `--altura-nav` e do `env(safe-area-inset-bottom)`.
+- **Alvo de toque não pode depender de `@media (pointer: coarse)`** — nem todo aparelho
+  anuncia ponteiro grosseiro. Onde importa, `min-height: 44px` direto.
+- O `.card` das listas tem `padding: 0`: cartão com padding mais item com padding roubava
+  32px de largura útil numa tela de 360px.
+
 ## Acessibilidade
 
 O app é usado principalmente no celular, com uma mão. Regras que valem para

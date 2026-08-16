@@ -122,15 +122,27 @@ const handleFormSubmit = async (e) => {
     }
   };
 
+  // O rótulo saía de `priority.charAt(0).toUpperCase() + ...`, direto do valor
+  // guardado no banco — e "media" aparecia na tela sem acento.
+  const rotuloDaPrioridade = (priority) => ({
+    alta: 'Alta',
+    media: 'Média',
+    baixa: 'Baixa',
+  }[priority] || priority);
+
   return (
     <div className="page-container tasks-page">
       <div className="tasks-header">
         <h1 className="page-title">Tarefas</h1>
-        <button className="btn btn-primary add-task-button" onClick={openAddTaskModal}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon">
+        <button
+          className="btn btn-primary add-task-button"
+          onClick={openAddTaskModal}
+          aria-label="Adicionar tarefa"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Adicionar Tarefa
+          <span className="rotulo-botao">Adicionar Tarefa</span>
         </button>
       </div>
 
@@ -158,7 +170,7 @@ const handleFormSubmit = async (e) => {
                 </div>
                 <div className="task-item-details">
                   <span className={`task-priority ${getPriorityClass(task.priority)}`}>
-                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                    {rotuloDaPrioridade(task.priority)}
                   </span>
                   <div className="task-actions-menu">
                   <button

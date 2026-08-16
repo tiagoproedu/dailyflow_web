@@ -193,9 +193,13 @@ function RoutinesPage() {
     <div className="page-container routines-page">
       <div className="page-header-custom">
         <h1 className="page-title">Minhas Rotinas</h1>
-        <button className="btn btn-primary add-routine-button" onClick={openAddRoutineModal}>
+        <button
+          className="btn btn-primary add-routine-button"
+          onClick={openAddRoutineModal}
+          aria-label="Criar rotina"
+        >
           <PlusIcon />
-          Criar Rotina
+          <span className="rotulo-botao">Criar Rotina</span>
         </button>
       </div>
 

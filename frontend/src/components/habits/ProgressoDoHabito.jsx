@@ -19,16 +19,17 @@ function ProgressoDoHabito({ estatisticas }) {
         <div className="progresso-preenchido" style={{ width: `${percentual}%` }} />
       </div>
 
+      {/* Curto de propósito: numa tela de 360px cada palavra a mais vira uma linha
+          a mais, e a legenda repetia-se em cada hábito da lista. */}
       <p className="habit-progresso-legenda">
-        <strong>{diasRepetidos}</strong> de ~{automaticidade.media} repetições
+        <strong>{diasRepetidos}</strong>/{automaticidade.media} repetições
         {consistencia && (
           <>
             {' · '}
-            <strong>{consistencia.percentual}%</strong> em {consistencia.diasConsiderados}{' '}
-            {consistencia.diasConsiderados === 1 ? 'dia' : 'dias'}
+            <strong>{consistencia.percentual}%</strong> em {consistencia.diasConsiderados}d
           </>
         )}
-        {recorde > 1 && <> {' · '} recorde de {recorde} dias</>}
+        {recorde > 1 && <>{' · '}recorde {recorde}</>}
       </p>
     </div>
   );
