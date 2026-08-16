@@ -202,7 +202,10 @@ A evidência apoia o momento certo, não a quantidade.
 - Sequência dentro da notificação de lembrete
 
 **Fase 2 — tirar a fricção**
-- Botão "Feito ✓" na própria notificação (§1.3)
+- Botão "Feito ✓" na própria notificação (§1.3) *(feito)* — marcar deixou de custar seis
+  passos e passou a custar um, com o app fechado. A autorização é um token que só sabe
+  marcar aquele hábito naquele dia, para o token de sessão não precisar de sair do
+  `localStorage`; ver `backend/src/services/acaoRapidaServices.js`.
 - Aviso de sequência em risco no fim do dia, só quando há sequência a perder
 - Tela de recomeço depois de uma quebra (§1.10), em vez de silêncio
 

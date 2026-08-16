@@ -70,19 +70,22 @@ const chaveDaSemana = (ms) => {
  * mantém a corrente viva mas não entra na contagem. O número na tela continua a ser
  * um facto.
  *
+ * Quem trava o passeio é o primeiro dia em falta, não a data de criação do hábito: uma
+ * conclusão anterior ao `createdAt` (dado importado, por exemplo) tem de contar como
+ * qualquer outra. O `LIMITE_DE_DIAS` é que garante que o ciclo termina.
+ *
  * @param {Set<string>} feitos - Chaves dos dias concluídos.
  * @param {number} hojeMs - O dia de hoje, em ms UTC.
- * @param {number} inicioMs - O dia em que o hábito foi criado, em ms UTC.
  * @returns {{sequencia: number, diasPerdoados: number}} A sequência atual.
  */
-const calcularSequencia = (feitos, hojeMs, inicioMs) => {
+const calcularSequencia = (feitos, hojeMs) => {
     // O dia de hoje ainda está a correr: não ter marcado ainda não é ter falhado.
     let cursor = feitos.has(msParaChave(hojeMs)) ? hojeMs : hojeMs - DIA_MS;
 
     const semanasPerdoadas = new Set();
     let sequencia = 0;
 
-    for (let passo = 0; passo < LIMITE_DE_DIAS && cursor >= inicioMs; passo++) {
+    for (let passo = 0; passo < LIMITE_DE_DIAS; passo++) {
         if (feitos.has(msParaChave(cursor))) {
             sequencia++;
             cursor -= DIA_MS;
@@ -173,13 +176,14 @@ const calcularEstatisticas = (habito, agora = new Date()) => {
     const hojeChave = chaveDeHoje(agora);
     const hojeMs = chaveParaMs(hojeChave);
 
-    // O hábito não pode ter sequência anterior ao dia em que foi criado.
+    // A idade do hábito só entra na consistência: um hábito de 3 dias não pode ser
+    // julgado por uma janela de 30. A sequência não precisa dela — ver acima.
     const inicioMs = Math.min(
         chaveParaMs(chaveDeHoje(new Date(habito.createdAt))),
         hojeMs
     );
 
-    const { sequencia, diasPerdoados } = calcularSequencia(feitos, hojeMs, inicioMs);
+    const { sequencia, diasPerdoados } = calcularSequencia(feitos, hojeMs);
 
     return {
         sequencia,

@@ -189,10 +189,64 @@ const toggleHabitCompletion = async (habitId, userId) => {
   };
 };
 
+/**
+ * Marca um hábito como feito hoje. Nunca desmarca.
+ *
+ * É a operação por trás do botão "Feito ✓" da notificação, e por isso é **marcar** e não
+ * alternar: quem toca ali quer registar que fez. Se o toque fosse um `toggle`, tocar numa
+ * notificação antiga apagaria a conclusão do dia — o oposto exato da intenção.
+ *
+ * Repetir a chamada é inofensivo: se já estava marcado, não duplica nada.
+ *
+ * @param {string} habitId - O ID do hábito.
+ * @param {string} userId - O ID do utilizador dono do hábito.
+ * @param {string} dia - O dia a que o lembrete se referia, formato "AAAA-MM-DD".
+ * @returns {Promise<object>} O nome, se já estava marcado e as estatísticas atualizadas.
+ */
+const marcarHabitoNoDia = async (habitId, userId, dia) => {
+    const habit = await prisma.habit.findFirst({
+        where: { id: habitId, userId: userId },
+    });
+
+    if (!habit) {
+        throw new Error('Hábito não encontrado ou não pertence ao utilizador.');
+    }
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    // Uma notificação de ontem que ficou na gaveta não pode marcar o dia de hoje.
+    if (dia !== StreakServices.chaveDeHoje(hoje)) {
+        throw new Error('Este lembrete é de outro dia.');
+    }
+
+    const existente = await prisma.habitCompletion.findFirst({
+        where: { habitId: habitId, date: hoje },
+    });
+
+    if (!existente) {
+        await prisma.habitCompletion.create({
+            data: { habitId: habitId, date: hoje },
+        });
+    }
+
+    const atualizado = await prisma.habit.findUnique({
+        where: { id: habitId },
+        include: { completions: true },
+    });
+
+    return {
+        nome: habit.name,
+        jaEstava: Boolean(existente),
+        estatisticas: StreakServices.calcularEstatisticas(atualizado),
+    };
+};
+
 module.exports = {
     findAllHabits,
     createHabit,
     updateHabit,
     deleteHabit,
-    toggleHabitCompletion
+    toggleHabitCompletion,
+    marcarHabitoNoDia
 };

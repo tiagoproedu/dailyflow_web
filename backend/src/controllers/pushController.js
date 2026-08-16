@@ -1,4 +1,6 @@
 const PushServices = require('../services/pushServices');
+const AcaoRapidaServices = require('../services/acaoRapidaServices');
+const HabitServices = require('../services/habitServices');
 
 /**
  * Devolve a chave pública VAPID e se o servidor consegue mesmo enviar lembretes.
@@ -83,4 +85,36 @@ const testar = async (req, res) => {
     }
 };
 
-module.exports = { getChavePublica, inscrever, cancelar, getEstado, testar };
+/**
+ * Marca um hábito a partir do botão da própria notificação.
+ *
+ * Esta rota **não** passa pelo `protect`: quem chama é o service worker, que não tem o
+ * token de sessão. A autorização vem do token de ação que veio dentro do lembrete e que
+ * só serve para marcar aquele hábito naquele dia (ver `acaoRapidaServices.js`).
+ */
+const marcar = async (req, res) => {
+    let acao;
+
+    try {
+        acao = AcaoRapidaServices.lerToken(req.body?.token);
+    } catch (error) {
+        // 401: o problema é a credencial, não o pedido.
+        return res.status(401).json({ error: error.message });
+    }
+
+    try {
+        const resultado = await HabitServices.marcarHabitoNoDia(acao.habitId, acao.userId, acao.dia);
+        return res.status(200).json(resultado);
+    } catch (error) {
+        if (error.message === 'Este lembrete é de outro dia.') {
+            return res.status(409).json({ error: error.message });
+        }
+        if (error.message.includes('não encontrado')) {
+            return res.status(404).json({ error: error.message });
+        }
+        console.error('Erro ao marcar hábito pela notificação:', error);
+        return res.status(500).json({ error: 'Não foi possível marcar o hábito.' });
+    }
+};
+
+module.exports = { getChavePublica, inscrever, cancelar, getEstado, testar, marcar };

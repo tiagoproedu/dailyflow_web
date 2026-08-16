@@ -117,6 +117,29 @@ Regras que valem ao mexer nisto:
   aceita handler de `push`. Ao mexer no `vite.config.js`, não voltar para `generateSW`.
 - **Push exige HTTPS.** Pelo endereço HTTP da Tailscale nada disto existe.
 
+### O botão "Feito ✓" da notificação
+
+Marcar sem abrir o app. A parte delicada é a autorização: o service worker não enxerga o
+`localStorage`, onde vive o token de sessão.
+
+- **O token de sessão não sai do `localStorage`.** Copiá-lo para o IndexedDB (que o service
+  worker lê) deixaria uma credencial de 30 dias com acesso total à conta ao alcance de
+  qualquer script da origem, e ela sobreviveria ao "sair da conta". Em vez disso o lembrete
+  carrega um token que só sabe marcar **um** hábito **num** dia — `acaoRapidaServices.js`.
+- **A chave desses tokens é derivada da `CHAVE_SECRETA`, mas não é ela.** Assim um token de
+  ação nunca passa no `protect` e um token de sessão nunca marca um hábito.
+- **`POST /push/marcar` fica antes do `router.use(protect)`** no `pushRoutes.js`, de
+  propósito: ela autentica-se pelo token da ação.
+- **A operação é marcar, nunca alternar.** Se fosse `toggle`, tocar numa notificação antiga
+  apagaria a conclusão do dia. Tocar duas vezes não duplica nada.
+- **O dia vai dentro do token.** Uma notificação de ontem esquecida na gaveta não marca
+  hoje — devolve 409.
+- **Só há botão quando o lembrete tem um hábito só.** Com dois, "Feito" marcaria o quê?
+  Nesse caso a notificação apenas abre o app.
+- **O service worker sempre responde alguma coisa**, inclusive sem rede. Silêncio depois de
+  um toque faz a pessoa abrir o app para conferir — o passo que o botão existe para tirar.
+  Sucesso é `silent: true` (o toque acabou de acontecer); falha faz barulho.
+
 ## Sequência e reconhecimento
 
 O que faz alguém voltar ao app está estudado em `docs/engajamento.md` — o que Instagram,
@@ -182,7 +205,7 @@ Fora do escopo do v1, de propósito: gerador de rotinas com IA e gamificação
 | IA geradora de rotinas | ⬜ | ⬜ |
 | Deploy / PWA no celular | ✅ | ✅ |
 | Sequência, consistência e automaticidade | ✅ | ✅ |
-| Marcar o hábito pela própria notificação | ⬜ | ⬜ |
+| Marcar o hábito pela própria notificação | ✅ | ✅ |
 | Calendário de hábitos | ⬜ | ⬜ |
 
 ## Endpoints
@@ -205,6 +228,7 @@ GET    /profile                  # dados do utilizador + estatísticas reais
 GET    /push/chave-publica       GET  /push/estado
 POST   /push/inscrever           POST /push/cancelar
 POST   /push/testar              # lembrete de teste, para conferir no aparelho
+POST   /push/marcar              # botao "Feito" da notificacao; autentica-se pelo token da acao
 ```
 
 ### Modelo de Rotinas

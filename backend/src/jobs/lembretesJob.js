@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const {PrismaClient} = require('@prisma/client');
 const PushServices = require('../services/pushServices');
 const StreakServices = require('../services/streakServices');
+const AcaoRapidaServices = require('../services/acaoRapidaServices');
 
 const prisma = new PrismaClient();
 
@@ -51,6 +52,33 @@ const montarConteudo = (habitos) => {
 };
 
 /**
+ * Monta o botão "Feito ✓" que vai dentro da notificação.
+ *
+ * Só existe quando há **um** hábito no lembrete: com dois ou mais, um botão só seria
+ * ambíguo — marcaria o quê? Nesse caso a notificação continua a abrir o app, onde a
+ * pessoa escolhe. Melhor faltar o atalho do que registar algo que não aconteceu.
+ *
+ * @param {Array<object>} habitos - Os hábitos deste lembrete.
+ * @param {string} userId - O dono dos hábitos.
+ * @param {Date} agora - O instante do lembrete.
+ * @returns {object} `{ acao }` ou um objeto vazio.
+ */
+const montarAcao = (habitos, userId, agora) => {
+    if (habitos.length !== 1) return {};
+
+    return {
+        acao: {
+            titulo: 'Feito ✓',
+            token: AcaoRapidaServices.criarToken({
+                habitId: habitos[0].id,
+                userId,
+                dia: StreakServices.chaveDeHoje(agora),
+            }),
+        },
+    };
+};
+
+/**
  * Procura os hábitos cujo horário de gatilho é agora e avisa quem ainda não os marcou.
  *
  * Hábito já concluído hoje não gera lembrete: avisar sobre algo que a pessoa já fez é a
@@ -96,6 +124,7 @@ const dispararLembretesDe = async (agora = new Date()) => {
         Array.from(porUtilizador.entries()).map(async ([userId, lista]) => {
             const resultado = await PushServices.enviarParaUtilizador(userId, {
                 ...montarConteudo(lista),
+                ...montarAcao(lista, userId, agora),
                 url: '/dashboard',
                 // A tag faz a notificação nova substituir a anterior da mesma hora,
                 // em vez de empilhar se o servidor reiniciar.
@@ -139,4 +168,4 @@ const iniciarLembretes = () => {
     return tarefa;
 };
 
-module.exports = { iniciarLembretes, dispararLembretesDe, montarConteudo, horaLocal };
+module.exports = { iniciarLembretes, dispararLembretesDe, montarConteudo, montarAcao, horaLocal };
