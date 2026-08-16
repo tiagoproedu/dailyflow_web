@@ -1,4 +1,5 @@
 const {PrismaClient} = require('@prisma/client');
+const StreakServices = require('./streakServices');
 const prisma = new PrismaClient();
 
 const DAYS_IN_STRIP = 5;
@@ -61,13 +62,13 @@ const getSummary = async (userId) => {
                 completedAt: { gte: startOfDay },
             },
         }),
+        // O histórico completo entra aqui porque a sequência precisa dele: filtrar
+        // pelos últimos dias faria a corrente parecer que começou na sexta-feira.
         prisma.habit.findMany({
             where: { userId: userId },
             orderBy: { createdAt: 'desc' },
             include: {
-                completions: {
-                    where: { date: { gte: days[0] } },
-                },
+                completions: true,
             },
         }),
         prisma.routine.findMany({
@@ -83,8 +84,10 @@ const getSummary = async (userId) => {
     // Para cada hábito, monta a faixa dos últimos dias — é isso que desenha os pontinhos
     const habitsToday = habits.map((habit) => {
         const completedDates = habit.completions.map((completion) =>
-            new Date(completion.date).toISOString().slice(0, 10)
+            StreakServices.chaveDeConclusao(completion.date)
         );
+
+        const estatisticas = StreakServices.calcularEstatisticas(habit);
 
         return {
             id: habit.id,
@@ -92,10 +95,10 @@ const getSummary = async (userId) => {
             category: habit.category,
             cue: habit.cue,
             cueTime: habit.cueTime,
-            currentStreak: habit.currentStreak,
-            completedToday: completedDates.includes(
-                new Date(startOfDay).toISOString().slice(0, 10)
-            ),
+            // Antes isto era `habit.currentStreak`, uma coluna que ninguém escrevia:
+            // a API prometia uma sequência e devolvia zero para sempre.
+            estatisticas,
+            completedToday: estatisticas.feitoHoje,
             lastDays: days.map((day) => ({
                 date: day.toISOString().slice(0, 10),
                 completed: completedDates.includes(day.toISOString().slice(0, 10)),

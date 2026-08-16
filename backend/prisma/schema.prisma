@@ -96,9 +96,11 @@ model Habit {
   cueTime         String?  // horário opcional, formato "HH:MM"
   intrinsic       Boolean  @default(false) // "faço por gosto" -> não gamificar (sobrejustificação)
 
-  currentStreak   Int      @default(0)
-  longestStreak   Int      @default(0)
-  
+  // Sequência e recorde NÃO vivem aqui de propósito: são calculados a partir das
+  // conclusões em `streakServices.js`. As colunas existiam, ninguém escrevia nelas e
+  // a API devolvia zero para sempre — um número guardado diverge do histórico assim
+  // que alguém apaga uma conclusão antiga.
+
   // Relações
   userId          String
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)

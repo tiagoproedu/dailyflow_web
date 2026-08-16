@@ -1,8 +1,17 @@
 // src/pages/HabitsPage.jsx
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../components/ui/Modal';
+import Celebracao from '../components/ui/Celebracao';
+import ProgressoDoHabito from '../components/habits/ProgressoDoHabito';
 import apiClient from '../services/api';
 import { buildIntention } from '../utils/intention';
+import {
+  reconhecerMarcacao,
+  resumoDaSequencia,
+  vibrar,
+  PADRAO_MARCO,
+  PADRAO_NORMAL,
+} from '../utils/celebracao';
 
 // Ícones
 const PlusIcon = () => (
@@ -24,6 +33,7 @@ function HabitsPage() {
   const [editingHabit, setEditingHabit] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [formError, setFormError] = useState(null);
+  const [celebracao, setCelebracao] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -134,21 +144,28 @@ function HabitsPage() {
   
   const handleToggleHabit = async (habitId) => {
     try {
-      // Chama o novo endpoint
-      await apiClient(`/habits/${habitId}/toggle-completion`, 'POST');
+      const resultado = await apiClient(`/habits/${habitId}/toggle-completion`, 'POST');
 
-      // Atualiza o estado local para uma resposta visual imediata
+      if (resultado.completed) {
+        const reconhecimento = reconhecerMarcacao(resultado.estatisticas);
+        vibrar(reconhecimento.marco ? PADRAO_MARCO : PADRAO_NORMAL);
+        setCelebracao({ ...reconhecimento, id: Date.now() });
+      } else {
+        setCelebracao(null);
+      }
+
+      // Atualiza o estado local para uma resposta visual imediata. As conclusões são
+      // simuladas (só o dia de hoje muda), mas a sequência vem do servidor — é ela que
+      // aparece escrita, e um número na tela não pode ser um palpite do navegador.
       setHabits(currentHabits =>
         currentHabits.map(h => {
-          if (h.id === habitId) {
-            const completed = isCompletedToday(h);
-            // Simula a adição/remoção da conclusão no estado
-            const newCompletions = completed
-              ? h.completions.filter(c => c.date.split('T')[0] !== todayString)
-              : [...(h.completions || []), { date: new Date().toISOString() }];
-            return { ...h, completions: newCompletions };
-          }
-          return h;
+          if (h.id !== habitId) return h;
+
+          const newCompletions = resultado.completed
+            ? [...(h.completions || []), { date: new Date().toISOString() }]
+            : (h.completions || []).filter(c => c.date.split('T')[0] !== todayString);
+
+          return { ...h, completions: newCompletions, estatisticas: resultado.estatisticas };
         })
       );
     } catch (error) {
@@ -165,6 +182,15 @@ function HabitsPage() {
           Adicionar Hábito
         </button>
       </div>
+
+      <Celebracao mensagem={celebracao} aoFechar={() => setCelebracao(null)} />
+
+      {habits.length > 0 && (
+        <p className="habits-nota">
+          66 repetições é a <strong>média</strong> para um hábito virar automático — a faixa
+          real observada vai de 18 a 254 dias. A sequência tolera uma falha por semana.
+        </p>
+      )}
 
       <div className="habit-list-container card">
         {habits.length === 0 ? (
@@ -195,8 +221,12 @@ function HabitsPage() {
                       Sem gatilho definido — edite e responda &quot;quando?&quot;
                     </p>
                   )}
+                  <ProgressoDoHabito estatisticas={habit.estatisticas} />
                 </div>
                 <div className="habit-item-details task-item-details"> {/* Reutilizando task-item-details */}
+                  {resumoDaSequencia(habit.estatisticas) && (
+                    <span className="habit-streak">{resumoDaSequencia(habit.estatisticas)}</span>
+                  )}
                   <span className="habit-category">{habit.category}</span>
                   <div className="task-actions-menu">
                     <button

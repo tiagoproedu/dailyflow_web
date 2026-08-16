@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const {PrismaClient} = require('@prisma/client');
 const PushServices = require('../services/pushServices');
+const StreakServices = require('../services/streakServices');
 
 const prisma = new PrismaClient();
 
@@ -15,34 +16,31 @@ const horaLocal = (agora) =>
     `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
 
 /**
- * A meia-noite local de hoje — a mesma referência usada ao marcar um hábito.
- * @param {Date} agora - O instante de referência.
- * @returns {Date} Hoje às 00:00.
- */
-const inicioDoDia = (agora) => {
-    const dia = new Date(agora);
-    dia.setHours(0, 0, 0, 0);
-    return dia;
-};
-
-/**
  * Monta o texto da notificação a partir dos hábitos pendentes de um utilizador.
  *
  * A frase segue a intenção de implementação ("quando eu X, então eu vou Y"), que é a
  * estrutura que o app usa para formar hábitos — não um "abra o app" genérico.
  *
- * @param {Array<object>} habitos - Os hábitos a lembrar.
+ * A sequência entra aqui de propósito: é no momento do lembrete que ela tem efeito,
+ * porque é aí que existe algo a perder. Entra como facto, nunca como ameaça — falhar
+ * um dia não estraga o hábito (ver `docs/gamificacao.md`).
+ *
+ * @param {Array<object>} habitos - Os hábitos a lembrar, já com `estatisticas`.
  * @returns {object} O conteúdo pronto para o push.
  */
 const montarConteudo = (habitos) => {
     if (habitos.length === 1) {
         const [habito] = habitos;
+        const sequencia = habito.estatisticas ? habito.estatisticas.sequencia : 0;
 
+        const base = habito.cue
+            ? `Você combinou: quando ${habito.cue}.`
+            : 'Marque assim que fizer.';
+
+        // Abaixo de dois dias não há corrente nenhuma para mencionar.
         return {
             titulo: `Hora de: ${habito.name}`,
-            corpo: habito.cue
-                ? `Você combinou: quando ${habito.cue}.`
-                : 'Marque assim que fizer.',
+            corpo: sequencia >= 2 ? `${base} Sequência de ${sequencia} dias.` : base,
         };
     }
 
@@ -63,15 +61,21 @@ const montarConteudo = (habitos) => {
  */
 const dispararLembretesDe = async (agora = new Date()) => {
     const hora = horaLocal(agora);
-    const hoje = inicioDoDia(agora);
 
+    // O histórico inteiro vem junto porque a notificação cita a sequência. São poucos
+    // hábitos por minuto (só os que têm este `cueTime` exato), então sai barato.
     const habitos = await prisma.habit.findMany({
         where: { cueTime: hora },
-        include: { completions: { where: { date: hoje } } },
+        include: { completions: true },
     });
 
     // Sobram os que ainda não foram marcados hoje.
-    const pendentes = habitos.filter((habito) => habito.completions.length === 0);
+    const pendentes = habitos
+        .map((habito) => ({
+            ...habito,
+            estatisticas: StreakServices.calcularEstatisticas(habito, agora),
+        }))
+        .filter((habito) => !habito.estatisticas.feitoHoje);
 
     if (pendentes.length === 0) {
         return { hora, utilizadores: 0, enviadas: 0 };

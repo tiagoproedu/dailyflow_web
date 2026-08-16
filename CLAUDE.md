@@ -117,6 +117,41 @@ Regras que valem ao mexer nisto:
   aceita handler de `push`. Ao mexer no `vite.config.js`, não voltar para `generateSW`.
 - **Push exige HTTPS.** Pelo endereço HTTP da Tailscale nada disto existe.
 
+## Sequência e reconhecimento
+
+O que faz alguém voltar ao app está estudado em `docs/engajamento.md` — o que Instagram,
+TikTok e Duolingo têm em comum e quais dessas mecânicas servem aqui. `docs/gamificacao.md`
+continua a valer para **o que** recompensar; aquele documento trata de **como prender**.
+
+| Peça | Onde |
+|---|---|
+| Sequência, consistência 30 dias, automaticidade | `backend/src/services/streakServices.js` |
+| Frase de reconhecimento ao marcar | `frontend/src/utils/celebracao.js` |
+| Faixa fixa no rodapé que a exibe | `frontend/src/components/ui/Celebracao.jsx` |
+| Barra de automaticidade por hábito | `frontend/src/components/habits/ProgressoDoHabito.jsx` |
+
+Regras que valem ao mexer nisto:
+
+- **Sequência e recorde são calculados, nunca guardados.** As colunas `currentStreak` e
+  `longestStreak` existiam, ninguém escrevia nelas e a API devolvia zero para sempre —
+  foram removidas. Um contador guardado diverge do histórico assim que uma conclusão
+  antiga é apagada.
+- **Uma falha grátis por semana**, e só se o dia anterior foi feito: duas ausências
+  seguidas quebram mesmo. A sequência conta apenas dias realmente feitos — o dia
+  perdoado mantém a corrente viva sem entrar na contagem.
+- **A sequência nunca aparece sozinha.** Vem sempre com a consistência de 30 dias, que é o
+  número que sobrevive a um dia ruim.
+- **Nada de zeros.** Hábito sem repetição nenhuma não mostra "0 dias" nem "0%": a seção
+  simplesmente não aparece.
+- **A frase de reconhecimento varia**, mas todo número dentro dela vem do servidor, que
+  recalcula depois de gravar. Por isso `POST /habits/:id/toggle-completion` devolve
+  `{ completed, estatisticas }`.
+- **A faixa é `position: fixed` no rodapé.** No celular a lista de hábitos fica no fim de
+  uma página comprida; um aviso no topo apareceria fora do campo de visão de quem acabou
+  de tocar.
+- **Nada pune.** Sem dano, sem vermelho, sem "você falhou" — falhar um dia não atrapalha a
+  formação do hábito (Lally). O lembrete cita a sequência como facto, nunca como ameaça.
+
 ## Nada de tela falsa
 
 O app começou com páginas de exemplo cheias de dados inventados. Foram todas
@@ -146,7 +181,9 @@ Fora do escopo do v1, de propósito: gerador de rotinas com IA e gamificação
 | Gamificação (XP, moedas, loja) | ⬜ | ⬜ |
 | IA geradora de rotinas | ⬜ | ⬜ |
 | Deploy / PWA no celular | ✅ | ✅ |
-| Streaks e calendário de hábitos | ⬜ | ⬜ |
+| Sequência, consistência e automaticidade | ✅ | ✅ |
+| Marcar o hábito pela própria notificação | ⬜ | ⬜ |
+| Calendário de hábitos | ⬜ | ⬜ |
 
 ## Endpoints
 
@@ -158,7 +195,7 @@ GET    /tasks                    POST /tasks
 PATCH  /tasks/:id                DELETE /tasks/:id
 GET    /habits                   POST /habits
 PATCH  /habits/:id               DELETE /habits/:id
-POST   /habits/:id/toggle-completion
+POST   /habits/:id/toggle-completion   # devolve { completed, estatisticas }
 GET    /routines                 POST /routines
 PATCH  /routines/:id             DELETE /routines/:id
 POST   /routines/:id/tasks       DELETE /routines/:id/tasks/:taskId

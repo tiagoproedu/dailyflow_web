@@ -2,10 +2,19 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../../services/api';
 import { buildIntention } from '../../utils/intention';
+import Celebracao from '../ui/Celebracao';
+import {
+  reconhecerMarcacao,
+  resumoDaSequencia,
+  vibrar,
+  PADRAO_MARCO,
+  PADRAO_NORMAL,
+} from '../../utils/celebracao';
 
 function MainContent() {
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [celebracao, setCelebracao] = useState(null);
 
   const fetchSummary = async () => {
     try {
@@ -33,7 +42,18 @@ function MainContent() {
 
   const handleToggleHabit = async (habitId) => {
     try {
-      await apiClient(`/habits/${habitId}/toggle-completion`, 'POST');
+      const resultado = await apiClient(`/habits/${habitId}/toggle-completion`, 'POST');
+
+      // O reconhecimento sai dos números que o servidor recalculou depois de gravar.
+      // Desmarcar não celebra nada — e apaga a frase anterior, que deixou de valer.
+      if (resultado.completed) {
+        const reconhecimento = reconhecerMarcacao(resultado.estatisticas);
+        vibrar(reconhecimento.marco ? PADRAO_MARCO : PADRAO_NORMAL);
+        setCelebracao({ ...reconhecimento, id: Date.now() });
+      } else {
+        setCelebracao(null);
+      }
+
       fetchSummary();
     } catch (error) {
       console.error('Erro ao marcar hábito:', error);
@@ -62,6 +82,8 @@ function MainContent() {
     <div className="page-container">
         <h1 className="page-title">Olá, {user?.name?.split(' ')[0] || 'você'}</h1>
 
+        <Celebracao mensagem={celebracao} aoFechar={() => setCelebracao(null)} />
+
         <div className="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3" style={{ marginBottom: '2rem' }}>
           <div className="card">
             <h2 className="card-title">Tarefas Pendentes</h2>
@@ -76,12 +98,25 @@ function MainContent() {
             <p className="card-metric card-metric-purple">
               {stats.habitsDoneToday}/{stats.activeHabits}
             </p>
+            {/* A barra é o que cobra: um progresso incompleto à vista incomoda mais
+                que o mesmo número solto. Decorativa — a contagem acima já diz tudo
+                a quem usa leitor de tela. */}
+            {stats.activeHabits > 0 && (
+              <div className="progresso" aria-hidden="true">
+                <div
+                  className="progresso-preenchido"
+                  style={{
+                    width: `${Math.round((stats.habitsDoneToday / stats.activeHabits) * 100)}%`,
+                  }}
+                />
+              </div>
+            )}
             <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>
               {stats.activeHabits === 0
                 ? 'Nenhum hábito criado ainda'
                 : stats.habitsDoneToday === stats.activeHabits
                   ? 'Tudo feito hoje!'
-                  : 'Ainda dá tempo'}
+                  : `Faltam ${stats.activeHabits - stats.habitsDoneToday}`}
             </p>
           </div>
 
@@ -138,8 +173,17 @@ function MainContent() {
                       aria-pressed={habit.completedToday}
                       onClick={() => handleToggleHabit(habit.id)}
                     >
-                      <span className={habit.completedToday ? 'habit-done' : undefined}>
-                        {habit.name}
+                      <span className="habit-linha-nome">
+                        <span className={habit.completedToday ? 'habit-done' : undefined}>
+                          {habit.name}
+                        </span>
+                        {/* Só aparece quando existe corrente. Exibir "0 dias" seria
+                            mostrar a alguém que acabou de começar o quanto lhe falta. */}
+                        {resumoDaSequencia(habit.estatisticas) && (
+                          <span className="habit-streak">
+                            {resumoDaSequencia(habit.estatisticas)}
+                          </span>
+                        )}
                       </span>
                       {buildIntention(habit) && (
                         <span className="habit-intention">{buildIntention(habit)}</span>

@@ -1,20 +1,35 @@
 const {PrismaClient} = require('@prisma/client');
+const StreakServices = require('./streakServices');
 const prisma = new PrismaClient();
+
+/**
+ * Anexa a sequência, a consistência e as repetições a um hábito.
+ * Os números são sempre calculados a partir das conclusões, nunca guardados — ver
+ * o cabeçalho de `streakServices.js`.
+ * @param {object} habito - O hábito com as suas `completions`.
+ * @returns {object} O hábito com o campo `estatisticas`.
+ */
+const comEstatisticas = (habito) => ({
+    ...habito,
+    estatisticas: StreakServices.calcularEstatisticas(habito),
+});
 
 /**
  * Busca todos os hábitos de um utilizador específico.
  * @param {string} userId - O ID do utilizador.
- * @returns {Promise<Array>} A lista de hábitos.
+ * @returns {Promise<Array>} A lista de hábitos, cada um com as suas estatísticas.
  */
 
 const findAllHabits = async (userId) => {
-    return await prisma.habit.findMany({
+    const habitos = await prisma.habit.findMany({
         where: { userId: userId },
         orderBy: { createdAt: 'desc' },
         include: {
             completions: true,
         },
     });
+
+    return habitos.map(comEstatisticas);
 };
 
 /**
@@ -42,7 +57,7 @@ const createHabit = async (habitData, userId) => {
     const { name, category } = habitData;
     const { cue, cueTime, intrinsic } = parseCue(habitData);
 
-    return await prisma.habit.create({
+    const habito = await prisma.habit.create({
         data: {
             name,
             category,
@@ -55,6 +70,8 @@ const createHabit = async (habitData, userId) => {
             completions: true,
         },
     });
+
+    return comEstatisticas(habito);
 };
 
 /**
@@ -78,13 +95,15 @@ const updateHabit = async (habitId, userId, habitData) => {
         throw new Error('Hábito não encontrado ou não pertence ao utilizador.');
     }
 
-    return await prisma.habit.update({
+    const atualizado = await prisma.habit.update({
         where: { id: habitId },
         data: { name, category, cue, cueTime, intrinsic },
         include: {
             completions: true,
         },
     });
+
+    return comEstatisticas(atualizado);
 };
 
 /**
@@ -111,9 +130,14 @@ const deleteHabit = async (habitId, userId) => {
 
 /**
  * Marca ou desmarca um hábito como concluído para a data atual.
+ *
+ * Devolve as estatísticas **já recalculadas**: é com elas que a tela monta o
+ * reconhecimento do momento da marcação. O número tem de vir do servidor, senão o
+ * app acabaria a elogiar uma sequência que ele mesmo adivinhou.
+ *
  * @param {string} habitId - O ID do hábito.
  * @param {string} userId - O ID do utilizador.
- * @returns {Promise<object>} O estado da conclusão.
+ * @returns {Promise<object>} O estado da conclusão e as estatísticas atualizadas.
  */
 const toggleHabitCompletion = async (habitId, userId) => {
   // Garante que o hábito pertence ao utilizador
@@ -142,7 +166,6 @@ const toggleHabitCompletion = async (habitId, userId) => {
     await prisma.habitCompletion.delete({
       where: { id: existingCompletion.id },
     });
-    return { completed: false };
   } else {
     // Se não foi concluído hoje, cria uma nova conclusão (marca)
     await prisma.habitCompletion.create({
@@ -151,8 +174,19 @@ const toggleHabitCompletion = async (habitId, userId) => {
         date: today,
       },
     });
-    return { completed: true };
   }
+
+  // Relê as conclusões depois da escrita: a sequência devolvida é a que ficou
+  // gravada, não uma previsão do que devia ter acontecido.
+  const atualizado = await prisma.habit.findUnique({
+    where: { id: habitId },
+    include: { completions: true },
+  });
+
+  return {
+    completed: !existingCompletion,
+    estatisticas: StreakServices.calcularEstatisticas(atualizado),
+  };
 };
 
 module.exports = {

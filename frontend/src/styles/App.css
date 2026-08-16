@@ -661,13 +661,17 @@
   flex-shrink: 0;
 }
 
+/* Estava escrito em roxo médio sobre roxo claro: 3,9:1, abaixo do mínimo para
+   texto pequeno. O roxo escuro dá 6,5:1 e mantém a mesma leitura visual. */
 .habit-streak {
   font-size: 0.8rem;
-  font-weight: 500; /* */
-  color: var(--primary-purple-medium); /* */ /* Usando roxo para streak */
-  background-color: var(--primary-purple-light); /* */
+  font-weight: 600;
+  color: var(--primary-purple-darker);
+  background-color: var(--primary-purple-light);
   padding: 0.125rem 0.5rem;
-  border-radius: 9999px; /* */
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .habit-category {
@@ -1225,4 +1229,105 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ── Progresso e reconhecimento ─────────────────────────────────────────────
+   Ver docs/engajamento.md. Duas ideias aqui:
+   - a barra existe porque um progresso incompleto à vista cobra mais que o
+     mesmo número escrito;
+   - a frase de reconhecimento existe porque, até agora, marcar um hábito não
+     devolvia nada e o ciclo do hábito nunca fechava. */
+
+.progresso {
+  height: 0.5rem;
+  background-color: var(--neutral-gray);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progresso-fino {
+  height: 0.25rem;
+  margin: 0.5rem 0 0.375rem;
+}
+
+.progresso-preenchido {
+  height: 100%;
+  background-color: var(--primary-purple-medium);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+/* A região fica sempre no DOM (role="status"): leitor de tela só anuncia mudanças
+   dentro de uma região que já existia.
+
+   Ela é fixa no rodapé de propósito. No celular a lista de hábitos fica no fim de
+   uma página comprida — uma frase no topo apareceria fora do campo de visão de quem
+   acabou de tocar, e um reforço que não é visto não reforça nada. `pointer-events`
+   desligado para a frase nunca roubar um toque do que está por baixo. */
+.celebracao-area {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(30rem, calc(100vw - 2rem));
+  z-index: 900;
+  pointer-events: none;
+}
+
+.celebracao {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: #FFFFFF;
+  border-left: 4px solid var(--primary-purple-dark);
+  box-shadow: 0 6px 20px rgba(17, 24, 39, 0.18);
+  color: var(--primary-purple-darker);
+  font-size: 0.9375rem;
+  animation: celebracao-entrada 0.28s ease-out;
+}
+
+.celebracao-marco {
+  font-weight: 600;
+  border-left-width: 6px;
+  background-color: var(--primary-purple-light);
+}
+
+@keyframes celebracao-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* O nome do hábito e a sequência na mesma linha, sem empurrar a frase do gatilho. */
+.habit-linha-nome {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.habit-progresso {
+  margin-top: 0.5rem;
+}
+
+.habit-item-content .habit-progresso {
+  padding-left: 2.25rem; /* alinha com a frase do gatilho */
+}
+
+.habit-progresso-legenda {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--neutral-gray-dark);
+}
+
+.habits-nota {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: var(--neutral-gray-dark);
 }
