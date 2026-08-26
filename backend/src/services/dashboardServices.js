@@ -1,5 +1,6 @@
 const {PrismaClient} = require('@prisma/client');
 const StreakServices = require('./streakServices');
+const CompanheiroServices = require('./companheiroServices');
 const prisma = new PrismaClient();
 
 const DAYS_IN_STRIP = 5;
@@ -48,7 +49,14 @@ const getSummary = async (userId) => {
     const [user, pendingTasks, completedToday, habits, routines] = await Promise.all([
         prisma.user.findUnique({
             where: { id: userId },
-            select: { name: true, avatarInitial: true, virtualCoins: true, memberSince: true },
+            select: {
+                name: true,
+                avatarInitial: true,
+                virtualCoins: true,
+                memberSince: true,
+                companheiroNome: true,
+                companheiroDesde: true,
+            },
         }),
         prisma.task.findMany({
             where: { userId: userId, completed: false, isTemplate: false },
@@ -117,6 +125,9 @@ const getSummary = async (userId) => {
     return {
         user,
         timeOfDay,
+        // A criatura lê os mesmos hábitos que já foram buscados acima — com o histórico
+        // completo, que é o que o estágio dela precisa de contar.
+        companheiro: CompanheiroServices.estadoDoCompanheiro(user || {}, habits),
         stats: {
             pendingTasks: pendingTasks.length,
             completedToday,

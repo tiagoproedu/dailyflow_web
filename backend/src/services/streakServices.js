@@ -163,6 +163,34 @@ const calcularConsistencia = (feitos, hojeMs, inicioMs) => {
 };
 
 /**
+ * Descreve uma quebra em curso: o hábito já teve dias feitos e hoje está parado.
+ *
+ * Existe porque o dia seguinte a uma quebra é o momento de maior abandono em qualquer
+ * app de hábito (`docs/engajamento.md` §1.10), e até agora o app respondia a ele com
+ * silêncio — o número simplesmente sumia da tela.
+ *
+ * Quem decide se houve quebra é quem chama: só entra aqui com a sequência em zero. E
+ * zero, com a tolerância de uma falha por semana, já significa duas ausências seguidas —
+ * a primeira falha depois de um dia feito é sempre perdoada. Por isso um recomeço nunca
+ * aparece com menos de três dias desde a última marcação, e nunca no dia que ainda corre.
+ *
+ * @param {Set<string>} feitos - Chaves dos dias concluídos.
+ * @param {number} hojeMs - O dia de hoje, em ms UTC.
+ * @returns {{diasParado: number, ultimoDia: string}|null} Null quando nunca se marcou nada.
+ */
+const calcularRecomeco = (feitos, hojeMs) => {
+    // Quem nunca marcou não recomeçou coisa nenhuma: está a começar, que é outra tela.
+    if (feitos.size === 0) return null;
+
+    const ultimoDia = [...feitos].sort().pop();
+
+    return {
+        diasParado: Math.floor((hojeMs - chaveParaMs(ultimoDia)) / DIA_MS),
+        ultimoDia,
+    };
+};
+
+/**
  * Reúne tudo o que a tela mostra sobre o progresso de um hábito.
  * @param {object} habito - O hábito, com `createdAt` e `completions`.
  * @param {Date} agora - O instante de referência (injetável para testes).
@@ -185,9 +213,14 @@ const calcularEstatisticas = (habito, agora = new Date()) => {
 
     const { sequencia, diasPerdoados } = calcularSequencia(feitos, hojeMs);
 
+    // A quebra só é uma quebra se a corrente caiu mesmo. Um hábito com sequência viva
+    // nunca mostra tela de recomeço, por mais antiga que seja a última falha.
+    const recomeco = sequencia === 0 ? calcularRecomeco(feitos, hojeMs) : null;
+
     return {
         sequencia,
         diasPerdoados,
+        recomeco,
         recorde: Math.max(calcularRecorde([...feitos].sort()), sequencia),
         consistencia: calcularConsistencia(feitos, hojeMs, inicioMs),
         diasRepetidos: feitos.size,

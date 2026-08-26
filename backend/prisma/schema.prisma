@@ -24,6 +24,12 @@ model User {
   
   virtualCoins      Int      @default(0)
 
+  // O companheiro (`services/companheiroServices.js`). Só o nome e a data do batismo
+  // são guardados: o estágio e o humor da criatura são derivados das conclusões reais,
+  // como a sequência. Nulos até a pessoa dar um nome — é esse gesto que o cria.
+  companheiroNome   String?
+  companheiroDesde  DateTime?
+
   // Relações
   tasks             Task[]
   habits            Habit[]

@@ -1757,3 +1757,187 @@
 .task-actions-dropdown button {
   min-height: 44px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   COMPANHEIRO E RECOMEÇO
+   ══════════════════════════════════════════════════════════════════════════
+   Duas peças que respondem à mesma queixa: o app fechava o ciclo de cada
+   hábito, mas nada nele era *do* utilizador, e o dia seguinte a uma quebra
+   era recebido com silêncio. Ver `docs/engajamento.md` §1.9 e §1.10. */
+
+/* ── Companheiro ─────────────────────────────────────────────────────────── */
+
+/* Fica no topo do dashboard e por isso é uma faixa, não um cartão: a revisão
+   visual encurtou este topo de propósito e a lista de hábitos tem de continuar
+   a caber na primeira tela. */
+.companheiro {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background-color: var(--superficie);
+  border: 1px solid var(--borda-suave);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--sombra-1);
+}
+
+/* Sem nome ainda, o convite ocupa a linha inteira por baixo: é a única coisa que
+   esta faixa pede, e um botão pequeno ao lado do texto passava despercebido. */
+.companheiro-sem-nome {
+  grid-template-columns: auto 1fr;
+}
+
+.companheiro-batizar {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 44px;
+}
+
+.companheiro-texto {
+  min-width: 0;
+}
+
+.companheiro-fala {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--neutral-gray-darker);
+}
+
+.companheiro-resumo {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  color: var(--neutral-gray-dark);
+}
+
+/* 44px cheios mesmo sendo só um lápis: o alvo de toque não depende do tamanho do
+   desenho lá dentro. */
+.companheiro-renomear {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--neutral-gray-dark);
+  cursor: pointer;
+}
+
+.companheiro-renomear:hover {
+  background-color: var(--neutral-gray);
+  color: var(--primary-purple-dark);
+}
+
+/* A criatura respira. É o único movimento do app fora das transições, e existe
+   para ela parecer viva sem pedir nada — não há como interagir com ela. */
+.criatura {
+  flex-shrink: 0;
+  animation: companheiro-respira 4s ease-in-out infinite;
+}
+
+/* Quem está esperando fica parado. A ausência de movimento é a diferença que se
+   nota primeiro, e ela é honesta: nada aconteceu esta semana. */
+.criatura-esperando,
+.criatura-ovo {
+  animation: none;
+}
+
+@keyframes companheiro-respira {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .criatura {
+    animation: none;
+  }
+}
+
+/* O retrato grande, dentro do modal de batismo. */
+.companheiro-retrato {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0 1.25rem;
+  text-align: center;
+}
+
+.companheiro-estagio {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--neutral-gray-darker);
+}
+
+/* Campos de formulário com classe, em vez do `style={{...}}` repetido a cada
+   input das outras páginas. */
+.rotulo-campo {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--neutral-gray-darker);
+}
+
+.campo-texto {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem;
+  border: 1px solid var(--neutral-gray-medium);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+}
+
+/* ── Recomeço ────────────────────────────────────────────────────────────── */
+
+/* Roxo, nunca vermelho: isto não é um alerta e não houve estrago nenhum. A barra
+   à esquerda separa o cartão do resto da página sem gritar. */
+.recomeco {
+  border-left: 3px solid var(--primary-purple-medium);
+  background-color: var(--primary-purple-light);
+  margin-bottom: 0.75rem;
+}
+
+.recomeco .section-title {
+  margin-bottom: 0.25rem;
+}
+
+.recomeco-sobreviveu {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--neutral-gray-darker);
+}
+
+.recomeco-lista .list-item {
+  background-color: var(--superficie);
+}
+
+.recomeco-nome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.recomeco-nome .texto-apoio {
+  font-size: 0.75rem;
+}
+
+.recomeco-rodape {
+  margin-top: 0.75rem;
+}
+
+/* 44px sem depender de `@media (pointer: coarse)`: nem todo aparelho anuncia
+   ponteiro grosseiro, e este é o botão mais importante da funcionalidade — é o
+   toque que quebra a inércia depois de dias parado. */
+.recomeco-lista .btn {
+  min-height: 44px;
+  padding-left: 0.875rem;
+  padding-right: 0.875rem;
+  font-size: 0.8125rem;
+}

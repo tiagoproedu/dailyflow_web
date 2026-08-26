@@ -207,7 +207,12 @@ A evidência apoia o momento certo, não a quantidade.
   marcar aquele hábito naquele dia, para o token de sessão não precisar de sair do
   `localStorage`; ver `backend/src/services/acaoRapidaServices.js`.
 - Aviso de sequência em risco no fim do dia, só quando há sequência a perder
-- Tela de recomeço depois de uma quebra (§1.10), em vez de silêncio
+- Tela de recomeço depois de uma quebra (§1.10) *(feita)* — no dia seguinte à quebra o
+  app dizia nada: a sequência sumia da tela e o resto do histórico sumia junto, na
+  perceção. Agora o cartão nomeia a parada sem culpa, diz alto o que **não** foi apagado
+  (repetições, recorde, consistência) e põe o botão de marcar ali mesmo. Ver
+  `frontend/src/components/habits/Recomeco.jsx`.
+- Companheiro com nome (§1.9) *(feito)* — ver §6.
 
 **Fase 3 — o resto de `gamificacao.md`**
 - Moedas + loja de recompensas definidas por você
@@ -225,6 +230,42 @@ A evidência apoia o momento certo, não a quantidade.
 4. **Recompensa externa só onde não há motivação intrínseca** (`gamificacao.md` §2).
 5. **A sequência nunca aparece sozinha.** Sempre acompanhada da consistência, que é o
    número que sobrevive a um dia ruim.
+
+## 6. O companheiro
+
+Veio de uma observação do próprio dono do app, depois de o ter abandonado: *"para mim
+ainda é só um app de lembretes"*. É um diagnóstico exato. O app fechava o ciclo de cada
+hábito, um a um, mas não havia nada nele que fosse **dele** — abrir o DailyFlow era abrir
+listas, e listas não dão saudade.
+
+O Habitica resolve isto com um avatar. A mecânica por trás é o efeito Tamagotchi: cuidar
+de algo cria vínculo mais depressa que qualquer número. Mas o Habitica paga por isso com
+**dano**: falhar tira vida do personagem, e às vezes ele morre. Isso é punição, e a regra
+2 desta lista não admite punição — falhar um dia não atrapalha a formação do hábito
+(Lally), portanto um app que castiga está a discordar dos dados que ele mesmo mostra.
+
+O que se copiou, então, foi o vínculo sem a chantagem. Três regras, em
+`backend/src/services/companheiroServices.js`:
+
+1. **A criatura nunca sofre.** Não há dano, doença nem morte. Quando a pessoa some, a
+   criatura **espera** — de olhos abertos, parada, sem se queixar. Esperar é um facto
+   sobre ela; "você falhou" seria um juízo sobre a pessoa.
+2. **O crescimento não anda para trás.** O estágio sobe com o total de repetições e nunca
+   desce. É o que torna seguro investir: o §1.9 só é honesto se o que se acumulou for
+   mesmo do utilizador. O humor, esse, vai e volta com a semana.
+3. **Não se interage com ela.** Sem alimentar, vestir, equipar ou loja. Qualquer uma
+   dessas coisas seria um jogo *dentro* do app, e a regra 3 proíbe mecânicas que aumentem
+   o tempo de sessão. A criatura mostra estado e sai da frente.
+
+Os degraus não são uma escala inventada: são os números de Lally que o resto do app já
+usa — 1 repetição choca o ovo, 18 é o piso da faixa de automaticidade, 66 a média, 254 o
+teto observado. E o batismo é o passo de investimento propriamente dito: dar um nome é o
+gesto mais barato que existe e o que mais transforma uma imagem em *alguém*.
+
+**O que isto não resolve:** um personagem não faz ninguém marcar um hábito. Ele dá uma
+razão para voltar e um lugar onde a repetição fica visível — o resto continua a ser o
+ciclo das §1.1 a §1.3. Se o app for abandonado outra vez, a pergunta certa não é se falta
+mais gamificação, é qual dos três buracos do §3 continua aberto.
 
 ## Fontes
 

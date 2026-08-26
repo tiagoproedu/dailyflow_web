@@ -1,8 +1,11 @@
 // src/components/layout/MainContent.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import apiClient from '../../services/api';
 import { buildIntention } from '../../utils/intention';
 import Celebracao from '../ui/Celebracao';
+import Companheiro from '../companheiro/Companheiro';
+import Recomeco from '../habits/Recomeco';
+import { falaDeCrescimento } from '../../utils/companheiro';
 import {
   reconhecerMarcacao,
   resumoDaSequencia,
@@ -15,16 +18,36 @@ function MainContent() {
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [celebracao, setCelebracao] = useState(null);
+  const [erro, setErro] = useState('');
+
+  // O estágio anterior da criatura, para saber se ela **acabou** de crescer. Vive numa
+  // ref porque não desenha nada sozinho: só compara duas leituras do servidor.
+  const estagioAnterior = useRef(null);
 
   const fetchSummary = async () => {
     try {
       const data = await apiClient('/dashboard');
+
+      const indice = data.companheiro ? data.companheiro.estagio.indice : null;
+      // Só na subida. Na primeira carga não há com que comparar, e crescer é o único
+      // sentido possível: o estágio nunca anda para trás.
+      if (estagioAnterior.current !== null && indice > estagioAnterior.current) {
+        setCelebracao({ texto: falaDeCrescimento(data.companheiro), marco: true, id: Date.now() });
+      }
+      estagioAnterior.current = indice;
+
       setSummary(data);
+      setErro('');
     } catch (error) {
-      console.error('Erro ao carregar o dashboard:', error);
+      setErro(error.message || 'Não foi possível carregar o dashboard.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleBatizar = async (nome) => {
+    await apiClient('/companheiro', 'PATCH', { nome });
+    await fetchSummary();
   };
 
   useEffect(() => {
@@ -36,7 +59,7 @@ function MainContent() {
       await apiClient(`/tasks/${taskId}`, 'PATCH', { completed: true });
       fetchSummary();
     } catch (error) {
-      console.error('Erro ao concluir tarefa:', error);
+      setErro(error.message || 'Não foi possível concluir a tarefa.');
     }
   };
 
@@ -56,7 +79,7 @@ function MainContent() {
 
       fetchSummary();
     } catch (error) {
-      console.error('Erro ao marcar hábito:', error);
+      setErro(error.message || 'Não foi possível marcar o hábito.');
     }
   };
 
@@ -71,18 +94,30 @@ function MainContent() {
   if (!summary) {
     return (
       <div className="page-container">
-        <p role="alert">Não foi possível carregar o dashboard.</p>
+        <p role="alert">{erro || 'Não foi possível carregar o dashboard.'}</p>
       </div>
     );
   }
 
-  const { user, stats, recentTasks, habitsToday, routinesToday } = summary;
+  const { user, stats, recentTasks, habitsToday, routinesToday, companheiro } = summary;
+
+  // Um hábito só entra na tela de recomeço quando a corrente caiu mesmo — o serviço
+  // já filtrou o dia que ainda corre e a falha perdoada da semana.
+  const parados = habitsToday.filter((habito) => habito.estatisticas.recomeco);
 
   return (
     <div className="page-container">
         <h1 className="page-title">Olá, {user?.name?.split(' ')[0] || 'você'}</h1>
 
         <Celebracao mensagem={celebracao} aoFechar={() => setCelebracao(null)} />
+
+        {erro && <p className="form-error" role="alert">{erro}</p>}
+
+        <Companheiro companheiro={companheiro} aoBatizar={handleBatizar} />
+
+        {/* Antes da faixa de números de propósito: no dia seguinte a uma quebra, é
+            isto que a pessoa precisa de ver primeiro. */}
+        <Recomeco habitos={parados} aoMarcar={handleToggleHabit} />
 
         {/* Os três números viraram uma faixa. Antes eram três cartões de ~200px
             cada, e os hábitos — o que a pessoa abriu o app para fazer — só

@@ -202,6 +202,45 @@ Regras que valem ao mexer nisto:
 - **Nada pune.** Sem dano, sem vermelho, sem "você falhou" — falhar um dia não atrapalha a
   formação do hábito (Lally). O lembrete cita a sequência como facto, nunca como ameaça.
 
+## Companheiro e recomeço
+
+Duas peças que respondem à mesma queixa, registada em `docs/engajamento.md` §6: o app
+fechava o ciclo de cada hábito mas nada nele era *do* utilizador, e o dia seguinte a uma
+quebra era recebido com silêncio.
+
+| Peça | Onde |
+|---|---|
+| Estado da criatura (estágio, humor) e batismo | `backend/src/services/companheiroServices.js` |
+| Deteção da quebra (`estatisticas.recomeco`) | `backend/src/services/streakServices.js` |
+| Frases da criatura | `frontend/src/utils/companheiro.js` |
+| Faixa no topo do dashboard | `frontend/src/components/companheiro/Companheiro.jsx` |
+| O desenho, por estágio e humor | `frontend/src/components/companheiro/Criatura.jsx` |
+| Cartão de recomeço | `frontend/src/components/habits/Recomeco.jsx` |
+
+Regras que valem ao mexer nisto:
+
+- **A criatura nunca sofre.** Sem dano, doença ou morte — é a diferença deliberada para o
+  Habitica, e decorre da mesma regra que proíbe punir: falhar um dia não atrapalha a
+  formação do hábito (Lally). Quando o utilizador some, ela **espera**.
+- **O estágio nunca regride.** Sobe com o total de repetições e fica. Só o humor varia,
+  com os últimos 7 dias. Um crescimento que se pode perder não é investimento, é dívida.
+- **Não se interage com ela.** Sem alimentar, vestir ou loja: seria um jogo dentro do app,
+  e nenhuma mecânica pode aumentar o tempo de sessão.
+- **Só o nome e a data do batismo são guardados** (`User.companheiroNome`,
+  `companheiroDesde`). Estágio e humor derivam das conclusões, como a sequência.
+  Rebatizar **não** reinicia a data: o tempo juntos não foi o nome que o produziu.
+- **A quebra é `sequencia === 0` mais alguma conclusão no passado.** Com a tolerância de
+  uma falha por semana, zero já significa duas ausências seguidas — por isso o recomeço
+  nunca aparece com menos de três dias sem marcar, nem no dia que ainda corre.
+- **O cartão de recomeço não é um alerta.** Roxo, nunca vermelho; diz o que sobreviveu
+  (repetições, recorde) antes de qualquer outra coisa, e traz o botão de marcar dentro
+  dele — mandar a pessoa procurar o hábito noutra página é atrito no pior momento possível.
+
+> **Alvo de toque:** `@media (pointer: coarse)` ainda envolve o `min-height` de todos os
+> `.btn` no `App.css`. Num navegador que não anuncia ponteiro grosseiro eles caem para
+> ~28px. Onde o botão importa, escreva o `min-height` sem media query — foi o que se fez
+> em `.recomeco-lista .btn`.
+
 ## Nada de tela falsa
 
 O app começou com páginas de exemplo cheias de dados inventados. Foram todas
@@ -233,6 +272,8 @@ Fora do escopo do v1, de propósito: gerador de rotinas com IA e gamificação
 | Deploy / PWA no celular | ✅ | ✅ |
 | Sequência, consistência e automaticidade | ✅ | ✅ |
 | Marcar o hábito pela própria notificação | ✅ | ✅ |
+| Tela de recomeço depois de uma quebra | ✅ | ✅ |
+| Companheiro (criatura com nome) | ✅ | ✅ |
 | Calendário de hábitos | ⬜ | ⬜ |
 
 ## Endpoints
@@ -256,6 +297,7 @@ GET    /push/chave-publica       GET  /push/estado
 POST   /push/inscrever           POST /push/cancelar
 POST   /push/testar              # lembrete de teste, para conferir no aparelho
 POST   /push/marcar              # botao "Feito" da notificacao; autentica-se pelo token da acao
+PATCH  /companheiro              # da (ou troca) o nome da criatura; o estado dela vem no /dashboard
 ```
 
 ### Modelo de Rotinas
