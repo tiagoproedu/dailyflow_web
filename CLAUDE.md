@@ -65,7 +65,9 @@ O app é feito para o celular, com uma mão. O que decorre disso:
 | Destinos e ícones (fonte única) | `frontend/src/components/layout/navegacao.jsx` |
 | Barra inferior (celular) | `frontend/src/components/layout/BottomNav.jsx` |
 | Barra lateral (desktop) | `frontend/src/components/layout/Sidebar.jsx` |
-| Tokens, faixa de números, listas | bloco "REVISÃO VISUAL" no fim do `App.css` |
+| Tokens, faixa de números, listas | bloco "REVISÃO VISUAL" no `App.css` |
+| Botões, campos (`campo-texto`, `rotulo-campo`), telas de entrada | bloco "ACABAMENTO" no fim do `App.css` |
+| Menu "⋯" que fecha ao tocar fora / Esc | `frontend/src/hooks/useMenuAberto.js` |
 
 - **A navegação do celular é a barra inferior**, não a gaveta. A gaveta abria por um botão
   no canto superior esquerdo — o ponto mais difícil de alcançar com o polegar. Abaixo de
@@ -106,6 +108,9 @@ qualquer tela nova:
 - Mensagens que aparecem sozinhas levam `role="status"`; erros, `role="alert"`.
 
 ## Fuso horário
+
+**No frontend, "hoje" é `chaveDoDia()` (`src/utils/datas.js`), nunca `toISOString()`**: este
+converte para UTC e, em Fortaleza, qualquer hora depois das 21:00 já é o dia seguinte.
 
 O app roda em **America/Fortaleza**, definido em dois lugares: `TZ` no `compose.yaml` e um
 padrão no topo do `server.js` (antes de qualquer `new Date()`). **Não remover nenhum dos
@@ -236,10 +241,8 @@ Regras que valem ao mexer nisto:
   (repetições, recorde) antes de qualquer outra coisa, e traz o botão de marcar dentro
   dele — mandar a pessoa procurar o hábito noutra página é atrito no pior momento possível.
 
-> **Alvo de toque:** `@media (pointer: coarse)` ainda envolve o `min-height` de todos os
-> `.btn` no `App.css`. Num navegador que não anuncia ponteiro grosseiro eles caem para
-> ~28px. Onde o botão importa, escreva o `min-height` sem media query — foi o que se fez
-> em `.recomeco-lista .btn`.
+> **Alvo de toque:** o bloco "ACABAMENTO" no fim do `App.css` dá `min-height: 44px` a
+> todo `.btn` (36px no `.btn-xs`) sem depender de `@media (pointer: coarse)`.
 
 ## Nada de tela falsa
 
@@ -252,9 +255,8 @@ aparece; melhor faltar do que mentir.
 Fora do escopo do v1, de propósito: gerador de rotinas com IA e gamificação
 (moedas/XP — `virtualCoins` está no schema mas ninguém escreve nele).
 
-> O `npm run lint` já falha na origem com ~15 erros de `react/prop-types` — o projeto
-> nunca declarou PropTypes. Ao mexer, compare a contagem antes e depois em vez de
-> esperar zero.
+> O `npm run lint` passa com zero avisos. A regra `react/prop-types` está desligada no
+> `.eslintrc.cjs` (o projeto é JS puro e nunca usou PropTypes) — mantenha o zero.
 
 ## Estado das funcionalidades
 

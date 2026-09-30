@@ -1,8 +1,7 @@
-import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Sidebar from '../layout/Sidebar'; // Importe a Sidebar
-import Header from '../layout/Header';   // Importe o Header
+import Sidebar from '../layout/Sidebar';
+import Header from '../layout/Header';
 import BottomNav from '../layout/BottomNav';
 import { useEffect, useState } from 'react';
 
@@ -53,19 +52,14 @@ const AppLayout = () => {
 
 
 function ProtectedRoute() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
 
-  // 1. Se ainda estivermos a verificar a autenticação, não mostramos nada (ou um spinner)
-  if (isLoading) {
-    return <p role="status">A carregar…</p>;
-  }
-
-  // 2. Se não houver usuário, redireciona para a página de login
+  // 1. Se não houver usuário, redireciona para a página de login
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  // 3. Se houver um usuário, renderiza o layout principal do aplicativo
+  // 2. Se houver um usuário, renderiza o layout principal do aplicativo
   return <AppLayout />;
 }
 

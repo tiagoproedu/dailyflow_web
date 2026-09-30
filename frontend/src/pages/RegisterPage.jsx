@@ -1,6 +1,7 @@
-import React, {useState} from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
+import AuthLayout from '../components/auth/AuthLayout';
 
 function RegisterPage() {
 
@@ -16,6 +17,7 @@ function RegisterPage() {
 
   // Estado para lidar com messagem de erro
   const [ error, setError ] = useState(null);
+  const [ enviando, setEnviando ] = useState(false);
 
   // Função para atualizar o estado conforme o usuário digita
   const handleInputChange = (e) => {
@@ -26,76 +28,80 @@ function RegisterPage() {
   // Função para lidar com o envio do formulário
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (enviando) return;
     setError(null);
+    setEnviando(true);
 
     try {
       await apiClient('/auth/register', 'POST', formData);
 
-      // Se o registro for bem-sucedido, redireciona para a página de login
+      // Antes o login abria sem dizer nada, e não ficava claro se a conta tinha sido criada.
+      sessionStorage.setItem('mensagemDeLogin', 'Conta criada. Agora é só entrar.');
       navigate('/login');
 
     } catch (err) {
       setError(err.message);
-      console.error('Erro no registro:', err);
+      setEnviando(false);
     }
   };
 
   return (
-    <main className="page-container" style={{ maxWidth: '450px', margin: 'auto', paddingTop: '2rem' }}>
-      <div className="card">
-        <h1 className="page-title" style={{ textAlign: 'center' }}>Criar Conta</h1>
-        
-        {/* Exibe a mensagem de erro, se houver */}
-        {error && <p role="alert" style={{ color: '#B91C1C', textAlign: 'center', background: '#FEE2E2', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>{error}</p>}
+    <AuthLayout titulo="Criar conta" subtitulo="Comece pequeno. O pequeno é o que gruda.">
+      {error && <p role="alert" className="form-error">{error}</p>}
 
-        <form onSubmit={handleFormSubmit}>
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Nome</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
-            />
-          </div>
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
-            />
-          </div>
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5rem' }}>Senha</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              minLength="6"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
-            />
-          </div>
-          <div className="form-actions">
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Registrar</button>
-          </div>
-        </form>
-        
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--neutral-gray-dark)' }}>
-          Já tem uma conta? <Link to="/login" style={{ color: 'var(--primary-blue-medium)' }}>Faça o login</Link>
-        </p>
-      </div>
-    </main>
+      <form onSubmit={handleFormSubmit} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="name" className="rotulo-campo">Nome</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            autoComplete="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            required
+            className="campo-texto"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="email" className="rotulo-campo">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            required
+            className="campo-texto"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password" className="rotulo-campo">Senha</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autoComplete="new-password"
+            aria-describedby="senha-ajuda"
+            value={formData.password}
+            onChange={handleInputChange}
+            required
+            minLength={6}
+            className="campo-texto"
+          />
+          <p id="senha-ajuda" className="campo-ajuda">Pelo menos 6 caracteres.</p>
+        </div>
+        <button type="submit" className="btn btn-primary btn-bloco" disabled={enviando}>
+          {enviando ? 'Criando…' : 'Criar conta'}
+        </button>
+      </form>
+
+      <p className="auth-rodape">
+        Já tem uma conta? <Link to="/login">Faça o login</Link>
+      </p>
+    </AuthLayout>
   );
 }
 

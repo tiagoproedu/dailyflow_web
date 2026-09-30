@@ -27,7 +27,7 @@
  * @param {Date} agora - O dia de hoje.
  * @returns {string|null} A frase do marco, ou null.
  */
-export const marcoTemporal = (agora = new Date()) => {
+const marcoTemporal = (agora = new Date()) => {
   if (agora.getDate() === 1) return 'Hoje é dia 1.';
   if (agora.getDay() === 1) return 'Hoje é segunda-feira.';
 

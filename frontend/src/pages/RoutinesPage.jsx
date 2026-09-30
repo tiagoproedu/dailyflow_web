@@ -2,24 +2,22 @@
 import { useEffect, useState } from 'react';
 import Modal from '../components/ui/Modal';
 import apiClient from '../services/api';
+import { useMenuAberto } from '../hooks/useMenuAberto';
 
-// Ícone de exemplo para "Criar Rotina" (pode ser o mesmo PlusIcon ou outro)
 const PlusIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
   </svg>
 );
 
-// Ícone de exemplo para ações da rotina
 const DotsIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon-sm">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon-sm" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
   </svg>
 );
 
-// Ícone de exemplo para "IA Gerada"
 const AiIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon-xs" style={{ color: 'var(--primary-purple-medium)'}}>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="button-icon-xs" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L1.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.25 12L17 14.188l-1.25-2.188a2.25 2.25 0 00-1.75-1.75L12 9l2.188-1.25a2.25 2.25 0 001.75-1.75L17 3.813l1.25 2.188a2.25 2.25 0 001.75 1.75L22.188 9l-2.188 1.25a2.25 2.25 0 00-1.75 1.75z" />
   </svg>
 );
@@ -31,21 +29,17 @@ const EMPTY_FORM = {
   tasks: [''],
 };
 
-const inputStyle = {
-  width: '100%',
-  padding: '0.75rem',
-  borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--neutral-gray-medium)',
-};
-
 function RoutinesPage() {
   const [routines, setRoutines] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
+  const [openMenuId, setOpenMenuId] = useMenuAberto();
   const [expandedId, setExpandedId] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [erro, setErro] = useState(null);
+  const [formError, setFormError] = useState(null);
+  const [enviando, setEnviando] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
 
   // Busca as rotinas ao carregar a página
@@ -55,7 +49,7 @@ function RoutinesPage() {
         const data = await apiClient('/routines');
         setRoutines(data);
       } catch (error) {
-        console.error('Erro ao buscar rotinas:', error);
+        setErro(error.message || 'Não foi possível carregar as rotinas.');
       } finally {
         setIsLoading(false);
       }
@@ -66,6 +60,7 @@ function RoutinesPage() {
   const openAddRoutineModal = () => {
     setEditingRoutine(null);
     setFormData(EMPTY_FORM);
+    setFormError(null);
     setIsModalOpen(true);
   };
 
@@ -78,6 +73,7 @@ function RoutinesPage() {
       // Na edição as tarefas são geridas uma a uma, por isso o formulário só trata dos dados da rotina
       tasks: [],
     });
+    setFormError(null);
     setIsModalOpen(true);
     setOpenMenuId(null);
   };
@@ -113,19 +109,25 @@ function RoutinesPage() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (enviando) return;
+    setEnviando(true);
+    setFormError(null);
     const method = editingRoutine ? 'PATCH' : 'POST';
     const endpoint = editingRoutine ? `/routines/${editingRoutine.id}` : '/routines';
 
     try {
       const result = await apiClient(endpoint, method, formData);
       if (editingRoutine) {
-        setRoutines(routines.map(r => (r.id === editingRoutine.id ? result : r)));
+        setRoutines(prev => prev.map(r => (r.id === editingRoutine.id ? result : r)));
       } else {
-        setRoutines([...routines, result]);
+        setRoutines(prev => [...prev, result]);
       }
       closeModal();
     } catch (error) {
-      console.error(`Erro ao ${editingRoutine ? 'atualizar' : 'criar'} rotina:`, error);
+      // Antes só ia para o console: o modal ficava aberto sem explicação.
+      setFormError(error.message);
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -133,10 +135,10 @@ function RoutinesPage() {
     if (window.confirm('Tem a certeza de que deseja apagar esta rotina?')) {
       try {
         await apiClient(`/routines/${routineId}`, 'DELETE');
-        setRoutines(routines.filter(r => r.id !== routineId));
+        setRoutines(prev => prev.filter(r => r.id !== routineId));
         setOpenMenuId(null);
       } catch (error) {
-        console.error('Erro ao apagar rotina:', error);
+        setErro(error.message || 'Não foi possível apagar a rotina.');
       }
     }
   };
@@ -144,10 +146,10 @@ function RoutinesPage() {
   const handleToggleActive = async (routine) => {
     try {
       const result = await apiClient(`/routines/${routine.id}`, 'PATCH', { active: !routine.active });
-      setRoutines(routines.map(r => (r.id === routine.id ? result : r)));
+      setRoutines(prev => prev.map(r => (r.id === routine.id ? result : r)));
       setOpenMenuId(null);
     } catch (error) {
-      console.error('Erro ao ativar/desativar rotina:', error);
+      setErro(error.message || 'Não foi possível ativar/desativar a rotina.');
     }
   };
 
@@ -168,24 +170,24 @@ function RoutinesPage() {
   const handleAddTaskToRoutine = async (routine, text) => {
     try {
       const task = await apiClient(`/routines/${routine.id}/tasks`, 'POST', { text });
-      setRoutines(routines.map(r => (
+      setRoutines(prev => prev.map(r => (
         r.id === routine.id ? { ...r, templateTasks: [...r.templateTasks, task] } : r
       )));
     } catch (error) {
-      console.error('Erro ao adicionar tarefa à rotina:', error);
+      setErro(error.message || 'Não foi possível adicionar a tarefa à rotina.');
     }
   };
 
   const handleRemoveTaskFromRoutine = async (routine, taskId) => {
     try {
       await apiClient(`/routines/${routine.id}/tasks/${taskId}`, 'DELETE');
-      setRoutines(routines.map(r => (
+      setRoutines(prev => prev.map(r => (
         r.id === routine.id
           ? { ...r, templateTasks: r.templateTasks.filter(t => t.id !== taskId) }
           : r
       )));
     } catch (error) {
-      console.error('Erro ao remover tarefa da rotina:', error);
+      setErro(error.message || 'Não foi possível remover a tarefa da rotina.');
     }
   };
 
@@ -194,6 +196,7 @@ function RoutinesPage() {
       <div className="page-header-custom">
         <h1 className="page-title">Minhas Rotinas</h1>
         <button
+          type="button"
           className="btn btn-primary add-routine-button"
           onClick={openAddRoutineModal}
           aria-label="Criar rotina"
@@ -204,16 +207,18 @@ function RoutinesPage() {
       </div>
 
       {feedback && (
-        <div className="card" style={{ marginBottom: '1rem', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="aviso-fechavel">
           <span role="status">{feedback}</span>
-          <button className="btn btn-outline btn-xs" onClick={() => setFeedback(null)}>Fechar</button>
+          <button type="button" className="btn btn-outline btn-xs" onClick={() => setFeedback(null)}>Fechar</button>
         </div>
       )}
 
+      {erro && <p className="form-error" role="alert">{erro}</p>}
+
       {isLoading ? (
-        <p role="status" style={{ padding: '1.5rem', textAlign: 'center', color: '#6B7280' }}>A carregar rotinas…</p>
+        <p className="estado-vazio" role="status">A carregar rotinas…</p>
       ) : routines.length === 0 ? (
-        <div className="card" style={{ padding: '1.5rem', textAlign: 'center', color: '#6B7280' }}>
+        <div className="card estado-vazio">
           Nenhuma rotina ainda. Crie a sua primeira rotina matinal ou noturna!
         </div>
       ) : (
@@ -239,31 +244,35 @@ function RoutinesPage() {
                       <DotsIcon />
                     </button>
                     <div className={`task-actions-dropdown ${openMenuId === routine.id ? 'open' : ''}`}>
-                      <button onClick={() => openEditRoutineModal(routine)}>Editar</button>
-                      <button onClick={() => handleToggleActive(routine)}>
+                      <button type="button" onClick={() => openEditRoutineModal(routine)}>Editar</button>
+                      <button type="button" onClick={() => handleToggleActive(routine)}>
                         {routine.active ? 'Desativar' : 'Ativar'}
                       </button>
-                      <button onClick={() => handleDeleteRoutine(routine.id)} className="delete">Apagar</button>
+                      <button type="button" onClick={() => handleDeleteRoutine(routine.id)} className="delete">Apagar</button>
                     </div>
                   </div>
                 </div>
               </div>
-              <p className="routine-time">{routine.timeOfDay}</p>
-              <p className="routine-description">{routine.description}</p>
+              <p className="routine-time">
+                {routine.timeOfDay}
+                {!routine.active && <span className="routine-inativa"> · desativada</span>}
+              </p>
+              {routine.description && <p className="routine-description">{routine.description}</p>}
 
               <div className="routine-tasks-preview">
                 <h3 className="preview-title">Tarefas Principais:</h3>
                 {routine.templateTasks.length === 0 ? (
-                  <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>Sem tarefas — abra os detalhes para adicionar.</p>
+                  <p className="texto-apoio">Sem tarefas — abra os detalhes para adicionar.</p>
                 ) : (
                   <ul>
                     {(expandedId === routine.id ? routine.templateTasks : routine.templateTasks.slice(0, 3)).map(task => (
                       <li key={task.id}>
-                        {task.text}
+                        <span>{task.text}</span>
                         {expandedId === routine.id && (
                           <button
+                            type="button"
                             className="btn btn-outline btn-xs"
-                            style={{ marginLeft: '0.5rem' }}
+                            aria-label={`Remover ${task.text}`}
                             onClick={() => handleRemoveTaskFromRoutine(routine, task.id)}
                           >
                             remover
@@ -277,7 +286,7 @@ function RoutinesPage() {
 
                 {expandedId === routine.id && (
                   <form
-                    style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}
+                    className="linha-campo"
                     onSubmit={(e) => {
                       e.preventDefault();
                       const text = e.target.elements.newTask.value.trim();
@@ -286,20 +295,28 @@ function RoutinesPage() {
                       e.target.reset();
                     }}
                   >
-                    <input name="newTask" placeholder="Nova tarefa da rotina" style={{ ...inputStyle, padding: '0.5rem' }} />
+                    <input
+                      name="newTask"
+                      placeholder="Nova tarefa da rotina"
+                      aria-label="Nova tarefa da rotina"
+                      className="campo-texto"
+                    />
                     <button type="submit" className="btn btn-primary btn-xs">Adicionar</button>
                   </form>
                 )}
               </div>
 
-              <div className="routine-card-footer" style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="routine-card-footer">
                 <button
+                  type="button"
+                  aria-expanded={expandedId === routine.id}
                   className="btn btn-outline btn-xs"
                   onClick={() => setExpandedId(expandedId === routine.id ? null : routine.id)}
                 >
                   {expandedId === routine.id ? 'Ocultar Detalhes' : 'Ver Detalhes'}
                 </button>
                 <button
+                  type="button"
                   className="btn btn-primary btn-xs"
                   onClick={() => handleStartRoutine(routine)}
                   disabled={routine.templateTasks.length === 0}
@@ -314,24 +331,25 @@ function RoutinesPage() {
 
       <Modal title={editingRoutine ? 'Editar Rotina' : 'Criar Nova Rotina'} isOpen={isModalOpen} onClose={closeModal}>
         <form onSubmit={handleFormSubmit}>
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Nome da Rotina (Obrigatório)</label>
+          {formError && <p className="form-error" role="alert">{formError}</p>}
+          <div className="form-group">
+            <label htmlFor="name" className="rotulo-campo">Nome da Rotina (Obrigatório)</label>
             <input
               type="text" id="name" name="name"
               value={formData.name}
               onChange={handleInputChange}
               required
-              style={inputStyle}
+              className="campo-texto"
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label htmlFor="timeOfDay" style={{ display: 'block', marginBottom: '0.5rem' }}>Período do Dia</label>
+          <div className="form-group">
+            <label htmlFor="timeOfDay" className="rotulo-campo">Período do Dia</label>
             <select
               id="timeOfDay" name="timeOfDay"
               value={formData.timeOfDay}
               onChange={handleInputChange}
-              style={inputStyle}
+              className="campo-texto"
             >
               <option value="Manhã">Manhã</option>
               <option value="Tarde">Tarde</option>
@@ -339,31 +357,37 @@ function RoutinesPage() {
             </select>
           </div>
 
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem' }}>Descrição</label>
+          <div className="form-group">
+            <label htmlFor="description" className="rotulo-campo">Descrição</label>
             <input
               type="text" id="description" name="description"
               value={formData.description}
               onChange={handleInputChange}
-              style={inputStyle}
+              className="campo-texto"
             />
           </div>
 
           {!editingRoutine && (
-            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem' }}>Tarefas da Rotina</label>
+            <fieldset className="form-group">
+              <legend className="rotulo-campo">Tarefas da Rotina</legend>
               {formData.tasks.map((task, index) => (
-                <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <div key={index} className="linha-campo">
                   <input
                     type="text"
                     value={task}
                     onChange={(e) => handleTaskChange(index, e.target.value)}
                     placeholder={`Tarefa ${index + 1}`}
-                    style={inputStyle}
+                    aria-label={`Tarefa ${index + 1}`}
+                    className="campo-texto"
                   />
                   {formData.tasks.length > 1 && (
-                    <button type="button" className="btn btn-outline btn-xs" onClick={() => removeTaskField(index)}>
-                      &times;
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-xs"
+                      aria-label={`Remover tarefa ${index + 1}`}
+                      onClick={() => removeTaskField(index)}
+                    >
+                      <span aria-hidden="true">&times;</span>
                     </button>
                   )}
                 </div>
@@ -371,12 +395,12 @@ function RoutinesPage() {
               <button type="button" className="btn btn-outline btn-xs" onClick={addTaskField}>
                 + Adicionar tarefa
               </button>
-            </div>
+            </fieldset>
           )}
 
-          <div className="form-actions" style={{ textAlign: 'right' }}>
-            <button type="submit" className="btn btn-primary">
-              {editingRoutine ? 'Salvar Alterações' : 'Salvar Rotina'}
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary" disabled={enviando}>
+              {enviando ? 'Salvando…' : editingRoutine ? 'Salvar Alterações' : 'Salvar Rotina'}
             </button>
           </div>
         </form>

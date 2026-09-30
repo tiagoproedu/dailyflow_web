@@ -108,8 +108,10 @@ const getSummary = async (userId) => {
             estatisticas,
             completedToday: estatisticas.feitoHoje,
             lastDays: days.map((day) => ({
-                date: day.toISOString().slice(0, 10),
-                completed: completedDates.includes(day.toISOString().slice(0, 10)),
+                // Chave local, não `toISOString()`: esta só acertava enquanto o fuso
+                // fosse negativo.
+                date: StreakServices.chaveDeHoje(day),
+                completed: completedDates.includes(StreakServices.chaveDeHoje(day)),
             })),
         };
     });

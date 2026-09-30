@@ -14,6 +14,14 @@ import {
   PADRAO_NORMAL,
 } from '../../utils/celebracao';
 
+// "2026-09-30" vira "terça, 30" para o leitor de tela. O meio-dia evita que o fuso
+// empurre a data para o dia anterior.
+const formatarDia = (chave) => {
+  const data = new Date(`${chave}T12:00:00`);
+  if (Number.isNaN(data.getTime())) return chave;
+  return data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric' });
+};
+
 function MainContent() {
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +31,19 @@ function MainContent() {
   // O estágio anterior da criatura, para saber se ela **acabou** de crescer. Vive numa
   // ref porque não desenha nada sozinho: só compara duas leituras do servidor.
   const estagioAnterior = useRef(null);
+
+  // Itens com um pedido a caminho do servidor. Um segundo toque rápido no mesmo
+  // hábito desfazia o primeiro — o toggle chegava duas vezes.
+  const emCurso = useRef(new Set());
+  const executarUmaVez = async (chave, acao) => {
+    if (emCurso.current.has(chave)) return;
+    emCurso.current.add(chave);
+    try {
+      await acao();
+    } finally {
+      emCurso.current.delete(chave);
+    }
+  };
 
   const fetchSummary = async () => {
     try {
@@ -54,16 +75,16 @@ function MainContent() {
     fetchSummary();
   }, []);
 
-  const handleCompleteTask = async (taskId) => {
+  const handleCompleteTask = (taskId) => executarUmaVez(`tarefa-${taskId}`, async () => {
     try {
       await apiClient(`/tasks/${taskId}`, 'PATCH', { completed: true });
-      fetchSummary();
+      await fetchSummary();
     } catch (error) {
       setErro(error.message || 'Não foi possível concluir a tarefa.');
     }
-  };
+  });
 
-  const handleToggleHabit = async (habitId) => {
+  const handleToggleHabit = (habitId) => executarUmaVez(`habito-${habitId}`, async () => {
     try {
       const resultado = await apiClient(`/habits/${habitId}/toggle-completion`, 'POST');
 
@@ -77,11 +98,11 @@ function MainContent() {
         setCelebracao(null);
       }
 
-      fetchSummary();
+      await fetchSummary();
     } catch (error) {
       setErro(error.message || 'Não foi possível marcar o hábito.');
     }
-  };
+  });
 
   if (isLoading) {
     return (
@@ -211,7 +232,7 @@ function MainContent() {
                           className={`habit-dot ${day.completed ? 'completed' : ''}`}
                         >
                           <span className="sr-only">
-                            {day.date}: {day.completed ? 'feito' : 'não feito'}
+                            {formatarDia(day.date)}: {day.completed ? 'feito' : 'não feito'}
                           </span>
                         </li>
                       ))}
@@ -234,7 +255,9 @@ function MainContent() {
                   <li key={task.id} className="list-item">
                     <span>{task.text}</span>
                     <button
+                      type="button"
                       className="btn btn-primary btn-xs"
+                      aria-label={`Concluir ${task.text}`}
                       onClick={() => handleCompleteTask(task.id)}
                     >
                       Concluir

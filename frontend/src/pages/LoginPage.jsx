@@ -1,8 +1,9 @@
 // frontend/src/pages/LoginPage.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/api';
+import AuthLayout from '../components/auth/AuthLayout';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -16,9 +17,11 @@ function LoginPage() {
 
   // Estado para as mensagens de erro
   const [ error, setError ] = useState(null);
+  // Evita o envio duplo enquanto a primeira tentativa ainda está a caminho.
+  const [ enviando, setEnviando ] = useState(false);
 
-  // Aviso deixado pelo apiClient quando ele encerra uma sessão vencida. Sem isto,
-  // a pessoa era jogada de volta no login sem entender por quê.
+  // Aviso deixado pelo apiClient quando ele encerra uma sessão vencida (ou pelo
+  // registo, ao criar a conta). Sem isto, a pessoa chegava aqui sem entender por quê.
   const [ aviso, setAviso ] = useState(null);
   useEffect(() => {
     const mensagem = sessionStorage.getItem('mensagemDeLogin');
@@ -37,69 +40,65 @@ function LoginPage() {
   // Função para submeter o formulário de login
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (enviando) return;
     setError(null);
+    setEnviando(true);
 
     try {
       const data = await apiClient('/auth/login', 'POST', formData);
-
-      // Sucesso no login
-      console.log('Login bem-sucedido:', data);
       login(data.user, data.token);
-
-      navigate('/dashboard'); // Redireciona para a página do dashboard
-
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message);
-      console.error('Erro no login:', err);
+      setEnviando(false);
     }
   };
 
   return (
-    <main className="page-container" style={{ maxWidth: '450px', margin: 'auto', paddingTop: '2rem' }}>
-      <div className="card">
-        <h1 className="page-title" style={{ textAlign: 'center' }}>Login</h1>
-        
-        {aviso && !error && (
-          <p role="status" className="form-aviso">{aviso}</p>
-        )}
+    <AuthLayout titulo="Entrar" subtitulo="Bom te ver de novo.">
+      {aviso && !error && (
+        <p role="status" className="form-aviso">{aviso}</p>
+      )}
 
-        {error && <p role="alert" style={{ color: '#B91C1C', textAlign: 'center', background: '#FEE2E2', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>{error}</p>}
+      {error && <p role="alert" className="form-error">{error}</p>}
 
-        <form onSubmit={handleFormSubmit}>
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
-            />
-          </div>
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5rem' }}>Senha</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-gray-medium)' }}
-            />
-          </div>
-          <div className="form-actions">
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Entrar</button>
-          </div>
-        </form>
+      <form onSubmit={handleFormSubmit} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="email" className="rotulo-campo">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            required
+            className="campo-texto"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password" className="rotulo-campo">Senha</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autoComplete="current-password"
+            value={formData.password}
+            onChange={handleInputChange}
+            required
+            className="campo-texto"
+          />
+        </div>
+        <button type="submit" className="btn btn-primary btn-bloco" disabled={enviando}>
+          {enviando ? 'Entrando…' : 'Entrar'}
+        </button>
+      </form>
 
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--neutral-gray-dark)' }}>
-          Não tem uma conta? <Link to="/register" style={{ color: 'var(--primary-blue-medium)' }}>Crie uma agora</Link>
-        </p>
-      </div>
-    </main>
+      <p className="auth-rodape">
+        Não tem uma conta? <Link to="/register">Crie uma agora</Link>
+      </p>
+    </AuthLayout>
   );
 }
 

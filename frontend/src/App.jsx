@@ -1,5 +1,4 @@
 // frontend/src/App.jsx
-import React from 'react';
 import './styles/index.css';
 import './styles/App.css';
 import AppRoutes from './Routes';

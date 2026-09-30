@@ -10,12 +10,15 @@ const findAllTasks = async (userId) => {
 };
 
 const createTask = async (taskData, userId) => {
-    console.log("Creating task with data:", taskData, "for user ID:", userId);
     const {text, description, priority} = taskData;
+
+    if (typeof text !== 'string' || !text.trim()) {
+        throw new Error('O texto da tarefa é obrigatório.');
+    }
     const newTask = await prisma.task.create({
         data: {
             userId,
-            text,
+            text: text.trim(),
             description,
             priority: priority || 'baixa',
         },
@@ -35,7 +38,12 @@ const updateTask = async (taskId, userId, updateData) => {
 
   // 2. Atualiza a tarefa com os novos dados recebidos
   const dataToUpdate = {};
-  if (updateData.text !== undefined) dataToUpdate.text = updateData.text;
+  if (updateData.text !== undefined) {
+    if (typeof updateData.text !== 'string' || !updateData.text.trim()) {
+      throw new Error('O texto da tarefa é obrigatório.');
+    }
+    dataToUpdate.text = updateData.text.trim();
+  }
   if (updateData.description !== undefined) dataToUpdate.description = updateData.description;
   if (updateData.priority !== undefined) dataToUpdate.priority = updateData.priority;
   if (updateData.completed !== undefined) {

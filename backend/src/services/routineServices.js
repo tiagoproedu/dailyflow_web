@@ -46,15 +46,22 @@ const findAllRoutines = async (userId) => {
 const createRoutine = async (routineData, userId) => {
     const { name, description, timeOfDay, tasks = [] } = routineData;
 
+    if (typeof name !== 'string' || !name.trim()) {
+        throw new Error('O nome da rotina é obrigatório.');
+    }
+    if (!Array.isArray(tasks)) {
+        throw new Error('A lista de tarefas é inválida.');
+    }
+
     return await prisma.routine.create({
         data: {
-            name,
+            name: name.trim(),
             description,
-            timeOfDay,
+            timeOfDay: timeOfDay || 'Manhã',
             userId: userId,
             templateTasks: {
                 create: tasks
-                    .filter((text) => text && text.trim())
+                    .filter((text) => typeof text === 'string' && text.trim())
                     .map((text) => ({
                         text: text.trim(),
                         priority: 'media',
@@ -129,9 +136,13 @@ const addTemplateTask = async (routineId, userId, taskData) => {
 
     const { text, priority = 'media' } = taskData;
 
+    if (typeof text !== 'string' || !text.trim()) {
+        throw new Error('O texto da tarefa é obrigatório.');
+    }
+
     return await prisma.task.create({
         data: {
-            text,
+            text: text.trim(),
             priority,
             isTemplate: true,
             userId: userId,

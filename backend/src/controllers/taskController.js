@@ -19,11 +19,12 @@ const createNewTask = async (req, res) => {
 
     const userId = req.user.id;
 
-    console.log("User ID:", userId);
-
     const newTask = await TaskService.createTask(taskData, userId);
     res.status(201).json(newTask);
   } catch (error) {
+    if (error.message.includes('obrigatório')) {
+      return res.status(400).json({ error: error.message });
+    }
     res.status(500).json({ error: "Não foi possivel criar a tarefa." });
   }
 };
@@ -39,6 +40,9 @@ const updateTask = async (req, res) => {
   } catch (error) {
     if (error.message.includes('Tarefa não encontrada')) {
       return res.status(404).json({ error: error.message });
+    }
+    if (error.message.includes('obrigatório')) {
+      return res.status(400).json({ error: error.message });
     }
     res.status(500).json({ error: "Erro ao atualizar o status da tarefa." });
   }

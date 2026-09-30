@@ -1,5 +1,5 @@
 // frontend/src/Routes.jsx
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -11,16 +11,18 @@ import HabitsPage from "./pages/HabitsPage";
 import RoutinesPage from "./pages/RoutinesPage";
 import ProfilePage from "./pages/ProfilePage";
 
-// Importe o nosso novo componente!
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import PublicOnlyRoute from "./components/auth/PublicOnlyRoute";
 
 const AppRoutes = () => {
     return (
         <Routes>
             {/* Rotas Públicas */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route element={<PublicOnlyRoute />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+            </Route>
 
             {/* --- Rotas Privadas Agrupadas --- */}
             <Route element={<ProtectedRoute />}>
@@ -30,6 +32,9 @@ const AppRoutes = () => {
                 <Route path="/routines" element={<RoutinesPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
             </Route>
+
+            {/* Endereço desconhecido: antes era uma tela em branco. */}
+            <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }

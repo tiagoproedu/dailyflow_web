@@ -1,25 +1,28 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext } from 'react';
 
 // 1. Cria o Contexto
 const AuthContext = createContext();
 
-// 2. Cria o Provedor (Provider)
-// Este é o componente que vai "envolver" nossa aplicação
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('authToken'));
-  const [isLoading, setIsLoading] = useState(true); // Para sabermos se a autenticação inicial já foi checada
+// Lê o utilizador guardado no login. Um valor corrompido no localStorage (edição
+// manual, versão antiga do app) não pode derrubar o app inteiro no arranque.
+const lerUtilizadorGuardado = () => {
+  if (!localStorage.getItem('authToken')) return null;
 
-  // Efeito que roda quando o app carrega para "lembrar" do usuário.
-  // Guardamos os dados no login em vez de inventar um utilizador falso; se o token
-  // já não valer, a primeira chamada à API devolve 401 e o apiClient nos expulsa.
-  useEffect(() => {
-    if (token) {
-      const guardado = localStorage.getItem('authUser');
-      setUser(guardado ? JSON.parse(guardado) : { name: 'Você' });
-    }
-    setIsLoading(false);
-  }, [token]);
+  try {
+    const guardado = localStorage.getItem('authUser');
+    return guardado ? JSON.parse(guardado) : { name: 'Você' };
+  } catch {
+    return { name: 'Você' };
+  }
+};
+
+// 2. Cria o Provedor (Provider)
+// Este é o componente que vai "envolver" nossa aplicação.
+// O estado é lido de forma síncrona: se o token já não valer, a primeira chamada à
+// API devolve 401 e o apiClient nos expulsa.
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(lerUtilizadorGuardado);
+  const [token, setToken] = useState(() => localStorage.getItem('authToken'));
 
   // Função de Login que será usada pela LoginPage
   const login = (userData, authToken) => {
@@ -41,21 +44,19 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     token,
-    isLoading,
     login,
     logout,
   };
 
-  // Renderiza os componentes filhos dentro do Provedor
-  // O `!isLoading &&` garante que a gente não mostre o app antes de checar o login
   return (
     <AuthContext.Provider value={value}>
-      {!isLoading && children}
+      {children}
     </AuthContext.Provider>
   );
 }
 
 // 3. Cria um hook customizado para facilitar o uso do contexto
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }

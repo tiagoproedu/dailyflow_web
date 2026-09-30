@@ -1,24 +1,46 @@
 // frontend/src/pages/HomePage.jsx
-import React from 'react';
 import { Link } from 'react-router-dom';
-// import './HomePage.css'; // Poderíamos criar um CSS específico depois
+
+// O que o app faz hoje, e só isso — ver "Nada de tela falsa" no CLAUDE.md.
+const PONTOS = [
+  { titulo: 'Hábitos com gatilho', texto: '“Quando eu terminar o café, então eu vou ler.”' },
+  { titulo: 'Rotinas', texto: 'Monte uma vez; mande as tarefas para o dia com um toque.' },
+  { titulo: 'Lembretes', texto: 'Um aviso na hora do gatilho — e silêncio se já fez.' },
+];
 
 function HomePage() {
   return (
-    <main className="page-container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
-      <h1 className="header-title" style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-        Bem-vindo ao DailyFlow
-      </h1>
-      <p style={{ fontSize: '1.25rem', color: 'var(--neutral-gray-dark)', marginBottom: '2.5rem' }}>
-        Sua jornada para vencer a procrastinação e construir hábitos duradouros começa aqui.
-      </p>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-        <Link to="/login" className="btn btn-primary">
-          Login
-        </Link>
-        <Link to="/register" className="btn btn-outline">
-          Registrar
-        </Link>
+    <main className="home-page">
+      <div className="home-conteudo">
+        <div className="auth-marca">
+          <img src="/pwa-192.png" alt="" width="40" height="40" />
+          <span>DailyFlow</span>
+        </div>
+
+        <h1 className="home-titulo">
+          Hábitos que <span className="texto-gradiente">ficam</span>.
+        </h1>
+        <p className="home-subtitulo">
+          Sua jornada para vencer a procrastinação e construir hábitos duradouros começa aqui.
+        </p>
+
+        <div className="home-acoes">
+          <Link to="/register" className="btn btn-primary btn-grande">
+            Criar conta
+          </Link>
+          <Link to="/login" className="btn btn-outline btn-grande">
+            Já tenho conta
+          </Link>
+        </div>
+
+        <ul className="home-pontos">
+          {PONTOS.map((ponto) => (
+            <li key={ponto.titulo}>
+              <strong>{ponto.titulo}</strong>
+              <span>{ponto.texto}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </main>
   );

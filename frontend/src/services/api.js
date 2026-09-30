@@ -46,7 +46,7 @@ const apiClient = async (endpoint, method = 'GET', body = null) => {
   let response;
   try {
     response = await fetch(`${API_URL}${endpoint}`, config);
-  } catch (networkError) {
+  } catch {
     throw new Error('Não foi possível falar com o servidor. Verifique a sua ligação.');
   }
 
@@ -55,7 +55,17 @@ const apiClient = async (endpoint, method = 'GET', body = null) => {
   }
 
   // 5. Lida com a resposta
-  const data = await response.json();
+  // Um 502 do Caddy (backend fora do ar) chega como HTML, não JSON. Sem este
+  // cuidado o `response.json()` estourava com "Unexpected token '<'".
+  let data = {};
+  try {
+    data = await response.json();
+  } catch {
+    if (response.ok) {
+      throw new Error('O servidor respondeu num formato inesperado.');
+    }
+    throw new Error('O servidor está indisponível. Tente de novo daqui a pouco.');
+  }
 
   // O 401 do /auth/login é "senha errada", e quem chamou é que deve mostrar isso.
   // Nas outras rotas, 401 significa que a sessão acabou.

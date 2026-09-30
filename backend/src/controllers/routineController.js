@@ -16,6 +16,9 @@ const createNewRoutine = async (req, res) => {
         const newRoutine = await RoutineService.createRoutine(req.body, userId);
         res.status(201).json(newRoutine);
     } catch (error) {
+        if (error.message.includes('obrigatório') || error.message.includes('inválida')) {
+            return res.status(400).json({ error: error.message });
+        }
         res.status(500).json({ error: 'Não foi possivel criar a rotina.' });
     }
 };
@@ -57,6 +60,9 @@ const addTemplateTask = async (req, res) => {
     } catch (error) {
         if (error.message.includes('Rotina não encontrada')) {
             return res.status(404).json({ error: error.message });
+        }
+        if (error.message.includes('obrigatório')) {
+            return res.status(400).json({ error: error.message });
         }
         res.status(500).json({ error: 'Não foi possivel adicionar a tarefa à rotina.' });
     }

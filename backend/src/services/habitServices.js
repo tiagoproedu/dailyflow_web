@@ -55,11 +55,15 @@ const parseCue = (habitData) => {
  */
 const createHabit = async (habitData, userId) => {
     const { name, category } = habitData;
+
+    if (typeof name !== 'string' || !name.trim()) {
+        throw new Error('O nome do hábito é obrigatório.');
+    }
     const { cue, cueTime, intrinsic } = parseCue(habitData);
 
     const habito = await prisma.habit.create({
         data: {
-            name,
+            name: name.trim(),
             category,
             cue,
             cueTime,
@@ -86,6 +90,10 @@ const updateHabit = async (habitId, userId, habitData) => {
     const { name, category } = habitData;
     const { cue, cueTime, intrinsic } = parseCue(habitData);
 
+    if (name !== undefined && (typeof name !== 'string' || !name.trim())) {
+        throw new Error('O nome do hábito é obrigatório.');
+    }
+
     // Verifica se o hábito pertence ao utilizador
     const habit = await prisma.habit.findFirst({
         where: { id: habitId, userId: userId },
@@ -97,7 +105,7 @@ const updateHabit = async (habitId, userId, habitData) => {
 
     const atualizado = await prisma.habit.update({
         where: { id: habitId },
-        data: { name, category, cue, cueTime, intrinsic },
+        data: { name: name?.trim(), category, cue, cueTime, intrinsic },
         include: {
             completions: true,
         },
@@ -167,13 +175,20 @@ const toggleHabitCompletion = async (habitId, userId) => {
       where: { id: existingCompletion.id },
     });
   } else {
-    // Se não foi concluído hoje, cria uma nova conclusão (marca)
-    await prisma.habitCompletion.create({
-      data: {
-        habitId: habitId,
-        date: today,
-      },
-    });
+    // Se não foi concluído hoje, cria uma nova conclusão (marca).
+    // Dois pedidos quase simultâneos (toque duplo, duas abas) podem chegar os dois
+    // aqui; o segundo bate no @@unique([habitId, date]). O hábito ficou marcado,
+    // que era o que se pedia — não é um erro.
+    try {
+      await prisma.habitCompletion.create({
+        data: {
+          habitId: habitId,
+          date: today,
+        },
+      });
+    } catch (error) {
+      if (error.code !== 'P2002') throw error;
+    }
   }
 
   // Relê as conclusões depois da escrita: a sequência devolvida é a que ficou
@@ -225,9 +240,14 @@ const marcarHabitoNoDia = async (habitId, userId, dia) => {
     });
 
     if (!existente) {
-        await prisma.habitCompletion.create({
-            data: { habitId: habitId, date: hoje },
-        });
+        try {
+            await prisma.habitCompletion.create({
+                data: { habitId: habitId, date: hoje },
+            });
+        } catch (error) {
+            // Outro pedido marcou no mesmo instante: o resultado é o mesmo.
+            if (error.code !== 'P2002') throw error;
+        }
     }
 
     const atualizado = await prisma.habit.findUnique({
